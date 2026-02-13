@@ -17,6 +17,8 @@ set positional-arguments := true
   backup {{args}}
 
 # Check the configuration
+@check *args:
+  check {{args}}
 
 # Copy snapshots
 @copy *args:
