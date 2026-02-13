@@ -20,9 +20,9 @@ set positional-arguments := true
 @check *args:
   check {{args}}
 
-# Copy snapshots
-@copy *args:
-  copy {{args}}
+# Retrieve information about backups
+@info *args:
+  info {{args}}
 
 # Remove snapshots
 @forget *args:
