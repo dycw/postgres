@@ -9,13 +9,12 @@ from postgres._click import (
     user_option,
     version_option,
 )
-from postgres._constants import DEFAULT_REPO, POSTGRES_VERSION
+from postgres._constants import POSTGRES_VERSION
 from postgres._enums import DEFAULT_TYPE, Type
 from postgres._types import Repo
 from postgres._utilities import run_or_as_user, to_repo_num
 
 __all__ = [
-    "DEFAULT_REPO",
     "DEFAULT_TYPE",
     "POSTGRES_VERSION",
     "ClickRepo",

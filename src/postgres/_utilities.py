@@ -6,8 +6,6 @@ from typing import TYPE_CHECKING, assert_never
 
 from utilities.subprocess import run
 
-from postgres._constants import DEFAULT_REPO
-
 if TYPE_CHECKING:
     from utilities.types import LoggerLike, PathLike, Retry, StrStrMapping
 
@@ -15,12 +13,14 @@ if TYPE_CHECKING:
 
 
 def to_repo_num(
-    *, repo: Repo = DEFAULT_REPO, mapping: Mapping[str, int] | None = None
+    *, repo: Repo | None = None, mapping: Mapping[str, int] | None = None
 ) -> int:
     """Convert a repo number/name to a number."""
     match repo, mapping:
         case int(), _:
             return repo
+        case None, _:
+            return 1
         case str(), Mapping():
             return mapping[repo]
         case str(), None:
