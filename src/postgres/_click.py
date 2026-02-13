@@ -9,8 +9,7 @@ from postgres._constants import POSTGRES_VERSION
 from postgres._enums import DEFAULT_TYPE, Type
 
 if TYPE_CHECKING:
-    import postgres._types
-
+    from postgres._types import Repo
 
 # parameters
 
@@ -24,8 +23,8 @@ class ClickRepo(ParamType):
 
     @override
     def convert(
-        self, value: postgres._types.Repo, param: Parameter | None, ctx: Context | None
-    ) -> postgres._types.Repo:
+        self, value: Repo, param: Parameter | None, ctx: Context | None
+    ) -> Repo:
         _ = (param, ctx)
         return value
 
