@@ -70,7 +70,7 @@ def _backup_repo(
         print=True,
         logger=_LOGGER,
     )
-    _LOGGER.info("Finished %s backup %r to %r ", type_.desc, stanza, repo)
+    _LOGGER.info("Finished %s backup %r to repo %r", type_.desc, stanza, repo)
 
 
 ##
