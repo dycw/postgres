@@ -32,6 +32,6 @@ set positional-arguments := true
 @start *args:
   start {{args}}
 
-# Stop pgBackRest processes from running.
+# Stop pgBackRest processes from running
 @stop *args:
   stop {{args}}
