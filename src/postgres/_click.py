@@ -11,6 +11,7 @@ from postgres._enums import Type
 if TYPE_CHECKING:
     import postgres._types
 
+
 # parameters
 
 

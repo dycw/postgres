@@ -9,13 +9,14 @@ from postgres._click import (
 from postgres._constants import POSTGRES_VERSION
 from postgres._enums import DEFAULT_TYPE, Type
 from postgres._types import Repo
-from postgres._utilities import to_repo_num
+from postgres._utilities import run_or_as_user, to_repo_num
 
 __all__ = [
     "DEFAULT_TYPE",
     "POSTGRES_VERSION",
     "Repo",
     "Type",
+    "run_or_as_user",
     "stanza_argument",
     "to_repo_num",
     "type_default_option",

@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from shlex import join
 from typing import TYPE_CHECKING
 
 from click import command
 from utilities.click import CONTEXT_SETTINGS
 from utilities.core import always_iterable, is_pytest, set_up_logging, to_logger
-from utilities.subprocess import run
 
 from postgres import __version__
 from postgres._click import (
@@ -17,7 +15,7 @@ from postgres._click import (
 )
 from postgres._constants import DEFAULT_REPO
 from postgres._enums import DEFAULT_TYPE
-from postgres._utilities import to_repo_num
+from postgres._utilities import run_or_as_user, to_repo_num
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping
@@ -62,17 +60,16 @@ def _backup_repo(
     _LOGGER.info("%s backup %r to repo %r...", type_.desc.title(), stanza, repo)
     repo_num = to_repo_num(repo=repo, mapping=repo_mapping)
     _backup_repo(stanza, repo=repo_num, type_=type_)
-    parts: list[str] = [
+    run_or_as_user(
         "pgbackrest",
         f"--repo={repo_mapping}",
         f"--stanza={stanza}",
         f"--type={type_.value}",
         "backup",
-    ]
-    if user is None:
-        run(*parts)
-    else:
-        run("su", "-", "postgres", input=join(parts))
+        user=user,
+        print=True,
+        logger=_LOGGER,
+    )
     _LOGGER.info("Finished %s backup %r to %r ", type_.desc, stanza, repo)
 
 
@@ -95,7 +92,4 @@ def make_backup_cmd(
     return cli(name=name, help="Backup a database cluster", **CONTEXT_SETTINGS)(func)
 
 
-cli = make_backup_cmd()
-
-
-__all__ = ["backup"]
+__all__ = ["backup", "make_backup_cmd"]

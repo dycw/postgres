@@ -20,14 +20,14 @@
     cli = ["click==8.3.1", "dycw-utilities==0.189.1"]
 
   [project.scripts]
-    backup = "postgres.commands._backup:cli"
-    check = "postgres.commands._check:cli"
-    info = "postgres.commands._info:cli"
-    postgres-cli = "postgres._cli:cli"
-    restore = "postgres.commands._restore:cli"
-    stanza-create = "postgres.commands._stanza_create:cli"
-    start = "postgres.commands._start:cli"
-    stop = "postgres.commands._stop:cli"
+    backup = "postgres._cli:backup_cli"
+    check = "postgres._cli:check_cli"
+    info = "postgres._cli:info_cli"
+    postgres-cli = "postgres._cli:group_cli"
+    restore = "postgres._cli:restore_cli"
+    stanza-create = "postgres._cli:stanza_create_cli"
+    start = "postgres._cli:start_cli"
+    stop = "postgres._cli:stop_cli"
 
 
 [tool]
