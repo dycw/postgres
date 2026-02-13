@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 # parameters
 
 
-class Repo(ParamType):
+class ClickRepo(ParamType):
     name = "repo"
 
     @override
@@ -34,8 +34,9 @@ class Repo(ParamType):
 
 
 stanza_argument = argument("--stanza", type=Str())
+stanza_option = option("--stanza", type=Str(), default=None, help="Stanza name")
 repo_option = option(
-    "--repo", type=Repo(), default=DEFAULT_REPO, help="Repo number/name"
+    "--repo", type=ClickRepo(), default=DEFAULT_REPO, help="Repo number/name"
 )
 type_default_option, type_no_default_option = [
     option("--type", "type_", type=Enum(Type), default=d, help="Backup type")
@@ -48,8 +49,11 @@ version_option = option(
 
 
 __all__ = [
+    "ClickRepo",
     "stanza_argument",
+    "stanza_option",
     "type_default_option",
     "type_no_default_option",
+    "user_option",
     "version_option",
 ]

@@ -13,7 +13,6 @@ from postgres._click import (
     type_default_option,
     user_option,
 )
-from postgres._constants import DEFAULT_REPO
 from postgres._enums import DEFAULT_TYPE
 from postgres._utilities import run_or_as_user, to_repo_num
 
@@ -37,40 +36,43 @@ def backup(
     stanza: str,
     /,
     *,
-    repo: MaybeIterable[Repo] = DEFAULT_REPO,
+    repo: MaybeIterable[Repo] | None = None,
     repo_mapping: Mapping[str, int] | None = None,
     type_: Type = DEFAULT_TYPE,
     user: str | None = None,
 ) -> None:
-    for repo_i in always_iterable(repo):
-        _backup_repo(
-            stanza, repo=repo_i, repo_mapping=repo_mapping, type_=type_, user=user
-        )
+    if repo is None:
+        _backup_core(stanza, type_=type_, user=user)
+    else:
+        for repo_i in always_iterable(repo):
+            _backup_core(
+                stanza, repo=repo_i, repo_mapping=repo_mapping, type_=type_, user=user
+            )
 
 
-def _backup_repo(
+def _backup_core(
     stanza: str,
     /,
     *,
-    type_: Type = DEFAULT_TYPE,
-    repo: Repo,
+    repo: Repo | None = None,
     repo_mapping: Mapping[str, int] | None = None,
+    type_: Type = DEFAULT_TYPE,
     user: str | None = None,
 ) -> None:
-    _LOGGER.info("%s backup %r to repo %r...", type_.desc.title(), stanza, repo)
-    repo_num = to_repo_num(repo=repo, mapping=repo_mapping)
-    _backup_repo(stanza, repo=repo_num, type_=type_)
-    run_or_as_user(
-        "pgbackrest",
-        f"--repo={repo_mapping}",
-        f"--stanza={stanza}",
-        f"--type={type_.value}",
-        "backup",
-        user=user,
-        print=True,
-        logger=_LOGGER,
-    )
-    _LOGGER.info("Finished %s backup %r to repo %r", type_.desc, stanza, repo)
+    args: list[str] = ["pgbackrest"]
+    if repo is None:
+        _LOGGER.info("%s backup %r to default repo...", type_.desc.title(), stanza)
+        repo_num = repo
+    else:
+        _LOGGER.info("%s backup %r to repo %r...", type_.desc.title(), stanza, repo)
+        repo_num = to_repo_num(repo=repo, mapping=repo_mapping)
+        args.append(f"--repo={repo_num}")
+    args.extend([f"--stanza={stanza}", f"--type={type_.value}", "backup"])
+    run_or_as_user(*args, user=user, print=True, logger=_LOGGER)
+    if repo is None:
+        _LOGGER.info("Finished %s backup %r to default repo", type_.desc, stanza)
+    else:
+        _LOGGER.info("Finished %s backup %r to repo %r", type_.desc, stanza, repo)
 
 
 ##
