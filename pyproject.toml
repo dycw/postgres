@@ -4,7 +4,7 @@
 
 
 [dependency-groups]
-  dev = ["dycw-utilities[test]>=0.189.1", "pyright>=1.1.408"]
+  dev = ["dycw-utilities[test]>=0.189.1", "orjson>=3.11.7", "pyright>=1.1.408"]
 
 
 [project]
