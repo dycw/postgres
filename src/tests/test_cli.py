@@ -69,19 +69,17 @@ class TestCLI:
 
     @mark.parametrize("head", [param([]), param(["just"], marks=skipif_ci)])
     @mark.parametrize(
-        "args",
+        "arg",
         [
-            param(["backup"]),
-            param(["check"]),
-            param(["info"]),
-            param(["start"]),
-            param(["restore"]),
-            param(["stanza-create"]),
-            param(["stop"]),
+            param("backup"),
+            param("check"),
+            param("info"),
+            param("restore"),
+            param("stanza-create"),
+            param("start"),
+            param("stop"),
         ],
     )
     @throttle_test(duration=MINUTE)
-    def test_entrypoints_and_justfile(
-        self, *, head: list[str], args: list[str]
-    ) -> None:
-        run(*head, *args, "--help")
+    def test_entrypoints_and_justfile(self, *, head: list[str], arg: str) -> None:
+        run(*head, arg, "--help")
