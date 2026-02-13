@@ -1,3 +1,3 @@
-# `template-python`
+# `postgres`
 
-Template for Python packages
+Library to operate `postgres` and `pgbackrest`
