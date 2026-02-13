@@ -85,7 +85,7 @@ def make_backup_cmd(
     @type_default_option
     @repo_option
     @user_option
-    def func(*, stanza: str, type_: Type, repo: Repo, user: str | None) -> None:
+    def func(*, stanza: str, type_: Type, repo: Repo | None, user: str | None) -> None:
         if is_pytest():
             return
         set_up_logging(__name__, root=True, log_version=__version__)

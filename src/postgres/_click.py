@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, override
 from click import Context, Parameter, ParamType
 from utilities.click import Enum, Str, argument, option
 
-from postgres._constants import DEFAULT_REPO, POSTGRES_VERSION
+from postgres._constants import POSTGRES_VERSION
 from postgres._enums import Type
 
 if TYPE_CHECKING:
@@ -35,9 +35,7 @@ class ClickRepo(ParamType):
 
 stanza_argument = argument("--stanza", type=Str())
 stanza_option = option("--stanza", type=Str(), default=None, help="Stanza name")
-repo_option = option(
-    "--repo", type=ClickRepo(), default=DEFAULT_REPO, help="Repo number/name"
-)
+repo_option = option("--repo", type=ClickRepo(), default=None, help="Repo number/name")
 type_default_option, type_no_default_option = [
     option("--type", "type_", type=Enum(Type), default=d, help="Backup type")
     for d in [Type.incr, None]
