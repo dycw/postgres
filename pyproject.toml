@@ -16,8 +16,12 @@
   requires-python = ">= 3.12"
   version = "0.1.2"
 
+  [project.optional-dependencies]
+    cli = ["click==8.3.1", "dycw-utilities==0.189.1"]
+
   [project.scripts]
     backup = "postgres.commands._backup:cli"
+    check = "postgres.commands._check:cli"
     copy = "postgres.commands._copy:cli"
     forget = "postgres.commands._forget:cli"
     init = "postgres.commands._init:cli"
@@ -27,8 +31,6 @@
     unlock = "postgres.commands._unlock:cli"
 
 
-  [project.optional-dependencies]
-    cli = ["click==8.3.1", "dycw-utilities==0.189.1"]
 [tool]
   [tool.uv]
     [tool.uv.build-backend]
