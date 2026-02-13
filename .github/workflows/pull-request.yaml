@@ -5,6 +5,7 @@ name: pull-request
       - master
   schedule:
     - cron: 31 16 * * *
+    - cron: 10 10 * * *
 jobs:
   pyright:
     runs-on: ubuntu-latest

@@ -8,6 +8,7 @@
     "--cov=template_python",
     "--cov-config=.coveragerc.toml",
     "--cov-report=html",
+    "--cov=postgres",
   ]
   asyncio_default_fixture_loop_scope = "function"
   asyncio_mode = "auto"

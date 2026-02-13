@@ -1,17 +1,17 @@
 repos:
   - repo: https://github.com/dycw/pre-commit-hooks
-    rev: 0.14.127
+    rev: 0.14.138
     hooks:
       - id: add-hooks
         args:
           - --ci-github
-          - --description=Template for Python packages
+          - --description=Library to operate `postgres` and `pgbackrest`
           - --prettier
           - --python
-          - --python-package-name-external=dycw-template-python
-          - --python-package-name-internal=template-python
-          - --repo-name=template-generic
-          - --repo-name=template-python
+          - --python-package-name-external=dycw-postgres
+          - --python-package-name-internal=postgres
+          - --repo-name=postgres
+          - --shell
           - --toml
         priority: 10
       - id: add-future-import-annotations
@@ -32,11 +32,11 @@ repos:
         priority: 20
       - id: setup-bump-my-version
         args:
-          - --python-package-name-internal=template-python
+          - --python-package-name-internal=postgres
         priority: 20
       - id: setup-ci-pull-request
         args:
-          - --repo-name=template-python
+          - --repo-name=postgres
         priority: 20
       - id: setup-ci-push
         args:
@@ -56,20 +56,20 @@ repos:
         priority: 10
       - id: setup-pyproject
         args:
-          - --description=Template for Python packages
-          - --python-package-name-external=dycw-template-python
-          - --python-package-name-internal=template-python
+          - --description=Library to operate `postgres` and `pgbackrest`
+          - --python-package-name-external=dycw-postgres
+          - --python-package-name-internal=postgres
         priority: 20
       - id: setup-pyright
         priority: 20
       - id: setup-pytest
         args:
-          - --python-package-name-internal=template-python
+          - --python-package-name-internal=postgres
         priority: 20
       - id: setup-readme
         args:
-          - --repo-name=template-python
-          - --description=Template for Python packages
+          - --repo-name=postgres
+          - --description=Library to operate `postgres` and `pgbackrest`
         priority: 20
       - id: setup-ruff
         priority: 20
@@ -116,7 +116,7 @@ repos:
       - id: trailing-whitespace
         priority: 20
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.14
+    rev: v0.15.1
     hooks:
       - id: ruff-check
         args:
@@ -136,6 +136,11 @@ repos:
           - --option
           - reorder_keys=true
         priority: 40
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.11.0
+    hooks:
+      - id: shellcheck
+        priority: 40
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
@@ -147,6 +152,11 @@ repos:
         args:
           - --autofix
         priority: 20
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.12.0-2
+    hooks:
+      - id: shfmt
+        priority: 30
   - repo: local
     hooks:
       - id: prettier
