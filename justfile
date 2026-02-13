@@ -8,10 +8,6 @@ set positional-arguments := true
 @cli *args:
   postgres-cli {{args}}
 
-# Initialize a new repository
-@init *args:
-  init {{args}}
-
 # Backup a database cluster
 @backup *args:
   backup {{args}}
@@ -24,18 +20,18 @@ set positional-arguments := true
 @info *args:
   info {{args}}
 
-# Remove snapshots
-@forget *args:
-  forget {{args}}
-
-# Extract data from a snapshot
+# Restore a database cluster
 @restore *args:
   restore {{args}}
 
-# List all snapshots
-@snapshots *args:
-  restore {{args}}
+# Create the required stanza data
+@stanza-create *args:
+  stanza-create {{args}}
 
-# Remove stale locks
-@unlock *args:
-  unlock {{args}}
+# Allow pgBackRest processes to run
+@start *args:
+  start {{args}}
+
+# Stop pgBackRest processes from running.
+@stop *args:
+  stop {{args}}
