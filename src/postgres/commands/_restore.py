@@ -116,13 +116,11 @@ def make_restore_cmd(
     )
     @user_option
     def func(
+        *,
         cluster: str,
         stanza: str,
-        /,
-        *,
         version: int,
         repo: Repo | None,
-        repo_mapping: Mapping[str, int] | None,
         target_timeline: int | None,
         user: str | None,
     ) -> None:
@@ -134,7 +132,6 @@ def make_restore_cmd(
             stanza,
             version=version,
             repo=repo,
-            repo_mapping=repo_mapping,
             target_timeline=target_timeline,
             user=user,
         )

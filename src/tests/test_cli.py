@@ -28,26 +28,26 @@ class TestCLI:
         ("command", "args"),
         [
             # backup
-            param(backup_cli, ["path", "local:/tmp"]),
-            param(group_cli, ["backup", "path", "local:/tmp"]),
+            param(backup_cli, ["stanza"]),
+            param(group_cli, ["backup", "stanza"]),
             # check
-            param(check_cli, ["local:/tmp", "local:/tmp2"]),
-            param(group_cli, ["check", "local:/tmp", "local:/tmp2"]),
+            param(check_cli, []),
+            param(group_cli, ["check"]),
             # info
-            param(info_cli, ["local:/tmp"]),
-            param(group_cli, ["info", "local:/tmp"]),
-            # start
-            param(start_cli, ["local:/tmp"]),
-            param(group_cli, ["start", "local:/tmp"]),
+            param(info_cli, []),
+            param(group_cli, ["info"]),
             # restore
-            param(restore_cli, ["local:/tmp", "target"]),
-            param(group_cli, ["restore", "local:/tmp", "target"]),
-            # stanza_create
-            param(stanza_create_cli, ["local:/tmp"]),
-            param(group_cli, ["stanza_create", "local:/tmp"]),
+            param(restore_cli, ["cluster", "stanza"]),
+            param(group_cli, ["restore", "cluster", "stanza"]),
+            # stanza-create
+            param(stanza_create_cli, ["stanza"]),
+            param(group_cli, ["stanza-create", "stanza"]),
+            # start
+            param(start_cli, []),
+            param(group_cli, ["start"]),
             # stop
-            param(stop_cli, ["local:/tmp"]),
-            param(group_cli, ["stop", "local:/tmp"]),
+            param(stop_cli, []),
+            param(group_cli, ["stop"]),
             # version
             param(group_cli, ["--version"]),
         ],
@@ -71,12 +71,12 @@ class TestCLI:
     @mark.parametrize(
         "args",
         [
-            param(["backup", "path", "local:/tmp"]),
+            param(["backup"]),
             param(["check"]),
             param(["info"]),
             param(["start"]),
             param(["restore"]),
-            param(["stanza_create"]),
+            param(["stanza-create"]),
             param(["stop"]),
         ],
     )

@@ -32,7 +32,7 @@ class ClickRepo(ParamType):
 # options
 
 
-stanza_argument = argument("--stanza", type=Str())
+stanza_argument = argument("stanza", type=Str())
 stanza_option = option("--stanza", type=Str(), default=None, help="Stanza name")
 repo_option = option("--repo", type=ClickRepo(), default=None, help="Repo number/name")
 type_default_option, type_no_default_option = [
