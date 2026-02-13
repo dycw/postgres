@@ -144,6 +144,12 @@ dependencies = [
     { name = "dycw-utilities" },
 ]
 
+[package.optional-dependencies]
+cli = [
+    { name = "click" },
+    { name = "dycw-utilities" },
+]
+
 [package.dev-dependencies]
 dev = [
     { name = "dycw-utilities", extra = ["test"] },
@@ -153,8 +159,11 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "click", specifier = ">=8.3.1" },
+    { name = "click", marker = "extra == 'cli'", specifier = "==8.3.1" },
     { name = "dycw-utilities", specifier = ">=0.189.1" },
+    { name = "dycw-utilities", marker = "extra == 'cli'", specifier = "==0.189.1" },
 ]
+provides-extras = ["cli"]
 
 [package.metadata.requires-dev]
 dev = [

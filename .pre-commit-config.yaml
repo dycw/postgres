@@ -6,6 +6,7 @@ repos:
         args:
           - --ci-github
           - --description=Library to operate `postgres` and `pgbackrest`
+          - --just
           - --prettier
           - --python
           - --python-package-name-external=dycw-postgres
@@ -51,6 +52,8 @@ repos:
       - id: setup-git
         args:
           - --python
+        priority: 20
+      - id: setup-just
         priority: 20
       - id: setup-pre-commit
         priority: 10
