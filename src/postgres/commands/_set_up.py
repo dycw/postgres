@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Self
 
 import utilities.click
 from click import Command, command
@@ -14,13 +14,18 @@ from installer import (
     sudo_option,
 )
 from utilities.click import CONTEXT_SETTINGS, Enum, Str, argument, option
+from utilities.constants import Sentinel, sentinel
 from utilities.core import (
     TemporaryFile,
     get_local_ip,
     is_pytest,
+    kebab_case,
+    normalize_str,
+    replace_non_sentinel,
     set_up_logging,
     to_logger,
 )
+from utilities.dataclasses import yield_fields
 from utilities.pydantic import ensure_secret, extract_secret
 from utilities.subprocess import chown, copy_text, maybe_sudo_cmd, rm, run
 
@@ -88,7 +93,7 @@ def _set_up_pg_hba(
     _LOGGER.info("Setting up '%d-pg_hba.conf'...", version)
     pg_root = get_pg_root(root=root, version=version, name=name)
     copy_text(
-        PATH_CONFIGS / "pg_hba_conf.conf",
+        PATH_CONFIGS / "pg_hba.conf",
         pg_root / "pg_hba.conf",
         sudo=sudo,
         perms="u=rw,g=r,o=r",
@@ -141,13 +146,14 @@ def _set_up_pgbackrest(
     _LOGGER.info("Setting up 'pgbackrest.conf'...")
     dest = get_root(root=root) / "etc/pgbackrest/pgbackrest.conf"
     all_repos = [repo, *repos]
+    all_repos = [r.replace(n=n) for n, r in enumerate(all_repos, start=1)]
     copy_text(
         PATH_CONFIGS / "pgbackrest.conf",
         dest,
         sudo=sudo,
         substitutions={
             "PROCESS_MAX": processes,
-            "REPOS": "".join(r.text for r in all_repos),
+            "REPOS": "\n".join(r.text for r in all_repos).rstrip("\n"),
             "NAME": name,
             "VERSION": version,
         },
@@ -184,7 +190,7 @@ class RepoSpec:
     path: Path = field()
     n: int = field(default=1, kw_only=True)
     cipher_pass: pydantic.SecretStr | None = field(default=None, kw_only=True)
-    cipher_type: CipherType | None = field(default=DEFAULT_CIPHER_TYPE, kw_only=True)
+    cipher_type: CipherType | None = field(default=None, kw_only=True)
     repo_type: RepoType = field(default=DEFAULT_REPO_TYPE, kw_only=True)
     retention_diff: int | None = field(default=None, kw_only=True)
     retention_full: int | None = field(default=None, kw_only=True)
@@ -194,9 +200,47 @@ class RepoSpec:
     s3_key_secret: pydantic.SecretStr | None = field(default=None, kw_only=True)
     s3_region: str | None = field(default=None, kw_only=True)
 
+    def replace(
+        self,
+        *,
+        path: Path | Sentinel = sentinel,
+        n: int | Sentinel = sentinel,
+        cipher_pass: pydantic.SecretStr | None | Sentinel = sentinel,
+        cipher_type: CipherType | None | Sentinel = sentinel,
+        repo_type: RepoType | None | Sentinel = sentinel,
+        retention_diff: int | None | Sentinel = sentinel,
+        retention_full: int | None | Sentinel = sentinel,
+        s3_bucket: str | None | Sentinel = sentinel,
+        s3_endpoint: str | None | Sentinel = sentinel,
+        s3_key: pydantic.SecretStr | None | Sentinel = sentinel,
+        s3_key_secret: pydantic.SecretStr | None | Sentinel = sentinel,
+        s3_region: str | None | Sentinel = sentinel,
+    ) -> Self:
+        return replace_non_sentinel(
+            self,
+            path=path,
+            n=n,
+            cipher_pass=cipher_pass,
+            cipher_type=cipher_type,
+            repo_type=repo_type,
+            retention_diff=retention_diff,
+            retention_full=retention_full,
+            s3_bucket=s3_bucket,
+            s3_endpoint=s3_endpoint,
+            s3_key=s3_key,
+            s3_key_secret=s3_key_secret,
+            s3_region=s3_region,
+        )
+
     @property
     def text(self) -> str:
-        raise NotImplementedError
+        lines: list[str] = []
+        for fld in yield_fields(self):
+            name, value = fld.name, fld.value
+            if (name != "n") and (value is not None):
+                key = f"repo{self.n}-{kebab_case(name)}"
+                lines.append(f"{key} = {value}")
+        return normalize_str("\n".join(lines))
 
     @property
     def _path_leading(self) -> Path:
