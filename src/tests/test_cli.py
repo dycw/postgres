@@ -62,24 +62,17 @@ class TestCLI:
         result = runner.invoke(command, args)
         assert result.exit_code == 0, result.stderr
 
-    @throttle_test(duration=MINUTE)
-    def test_entrypoint(self) -> None:
-        run("postgres-cli", "--help")
-
-    @skipif_ci
-    @throttle_test(duration=MINUTE)
-    def test_justfile(self) -> None:
-        run("just", "cli", "--help")
-
     @mark.parametrize("head", [param([]), param(["just"], marks=skipif_ci)])
     @mark.parametrize(
         "arg",
         [
             param("backup"),
             param("check"),
+            param("cli"),
             param("info"),
             param("restore"),
             param("stanza-create"),
+            param("set-up"),
             param("start"),
             param("stop"),
         ],
