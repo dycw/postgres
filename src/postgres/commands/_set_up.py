@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from installer import get_root, set_up_pgbackrest, set_up_postgres
-from utilities.core import to_logger
+from utilities.core import get_local_ip, to_logger
 from utilities.subprocess import copy_text, maybe_sudo_cmd, run
 
 from postgres._constants import PATH_CONFIGS, PORT, VERSION
@@ -24,9 +24,10 @@ def set_up(
     password: SecretLike,
     /,
     *,
-    version: int = VERSION,
     sudo: bool = False,
+    version: int = VERSION,
     port: int = PORT,
+    root: PathLike | None = None,
 ) -> None:
     _LOGGER.info("Setting up Postgres & pgBackRest...")
     set_up_postgres(sudo=sudo)
@@ -34,8 +35,8 @@ def set_up(
     drop_cluster("main", version=version, sudo=sudo)
     drop_cluster(name, version=version, sudo=sudo)
     _create_cluster(name, version=version, port=port, sudo=sudo)
-    _set_up_pg_hba(name, root=root, version=version, sudo=sudo)
-    _set_up_postgresql_conf(version=version, name=name)
+    _set_up_pg_hba(name, version=version, root=root, sudo=sudo)
+    _set_up_postgresql_conf(name, version=version, root=root, sudo=sudo)
     _remove_debian_pgbackrest_conf()
     _set_up_pgbackrest(version=version, name=name)
     _change_ownership()
@@ -57,8 +58,8 @@ def _set_up_pg_hba(
     name: str,
     /,
     *,
-    root: PathLike | None = None,
     version: int = VERSION,
+    root: PathLike | None = None,
     sudo: bool = False,
 ) -> None:
     _LOGGER.info("Setting up '%d-pg_hba.conf'...", version)
@@ -69,7 +70,12 @@ def _set_up_pg_hba(
         sudo=sudo,
         perms="u=rw,g=r,o=r",
     )
-    copy_text(PATH_CONFIGS, root / "pg_hba.conf.d/custom.conf", perms="u=rw,g=r,o=r")
+    copy_text(
+        PATH_CONFIGS / "pg_hba.custom.conf",
+        pg_root / "pg_hba.conf.d/custom.conf",
+        sudo=sudo,
+        perms="u=rw,g=r,o=r",
+    )
 
 
 def _get_pg_root(
@@ -79,16 +85,19 @@ def _get_pg_root(
 
 
 def _set_up_postgresql_conf(
+    name: str,
+    /,
     *,
-    version: int = POSTGRES_SETTINGS.postgres.version,
-    name: str = POSTGRES_SETTINGS.postgres.name,
-    __root: PathLike | None = None,
+    version: int = VERSION,
+    root: PathLike | None = None,
+    sudo: bool = False,
 ) -> None:
-    _LOGGER.info("Setting up 'postgresql.conf'...")
-    root = _get_pg_root(version=version, name=name, root=__root)
-    set_up_config_file(
-        POSTGRES_SETTINGS.configs.postgresql_conf,
-        root / "conf.d/custom.conf",
+    _LOGGER.info("Setting up '%d-postgresql.conf'...", version)
+    pg_root = _get_pg_root(name, root=root, version=version)
+    copy_text(
+        PATH_CONFIGS / "postgresql.conf",
+        pg_root / "conf.d/custom.conf",
+        sudo=sudo,
         substitutions={"LISTEN_ADDRESSES": get_local_ip(), "CLUSTER": name},
         perms="u=rw,g=r,o=r",
     )
