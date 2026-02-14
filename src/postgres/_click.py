@@ -47,6 +47,7 @@ version_option = option("--version", type=int, default=VERSION, help="Postgres v
 
 __all__ = [
     "ClickRepoNumOrName",
+    "repo_option",
     "stanza_argument",
     "stanza_option",
     "type_default_option",
