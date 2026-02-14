@@ -14,7 +14,7 @@ from installer import (
     sudo_option,
 )
 from pydantic import SecretStr
-from utilities.click import CONTEXT_SETTINGS, Enum, Str, argument, option
+from utilities.click import CONTEXT_SETTINGS, Enum, Str, argument, flag, option
 from utilities.constants import Sentinel, sentinel
 from utilities.core import (
     TemporaryFile,
@@ -32,7 +32,7 @@ from utilities.subprocess import chown, copy_text, maybe_sudo_cmd, rm, run
 
 from postgres import __version__
 from postgres._constants import PATH_CONFIGS, PORT, PROCESS_MAX, VERSION
-from postgres._enums import DEFAULT_REPO_TYPE, CipherType, RepoType
+from postgres._enums import CipherType, RepoType
 from postgres._utilities import drop_cluster, get_pg_root, run_or_as_user
 
 if TYPE_CHECKING:
@@ -205,11 +205,12 @@ def _set_postgres_password(password: SecretLike, /) -> None:
 class RepoSpec:
     path: Path = field()
     n: int = field(default=1, kw_only=True)
+    bundle: bool | None = field(default=None, kw_only=True)
     cipher_pass: pydantic.SecretStr | None = field(default=None, kw_only=True)
     cipher_type: CipherType | None = field(default=None, kw_only=True)
     retention_diff: int | None = field(default=None, kw_only=True)
     retention_full: int | None = field(default=None, kw_only=True)
-    type: RepoType = field(default=DEFAULT_REPO_TYPE, kw_only=True)
+    type: RepoType | None = field(default=None, kw_only=True)
     s3_bucket: str | None = field(default=None, kw_only=True)
     s3_endpoint: str | None = field(default=None, kw_only=True)
     s3_key: pydantic.SecretStr | None = field(default=None, kw_only=True)
@@ -221,6 +222,7 @@ class RepoSpec:
         *,
         path: Path | Sentinel = sentinel,
         n: int | Sentinel = sentinel,
+        bundle: bool | None | Sentinel = sentinel,
         cipher_pass: pydantic.SecretStr | None | Sentinel = sentinel,
         cipher_type: CipherType | None | Sentinel = sentinel,
         retention_diff: int | None | Sentinel = sentinel,
@@ -236,6 +238,7 @@ class RepoSpec:
             self,
             path=path,
             n=n,
+            bundle=bundle,
             cipher_pass=cipher_pass,
             cipher_type=cipher_type,
             retention_diff=retention_diff,
@@ -255,6 +258,10 @@ class RepoSpec:
             match fld.name, fld.value:
                 case "path" as name, Path():
                     value = Path("/") / fld.value
+                case str() as name, True:
+                    value = "y"
+                case str() as name, False:
+                    value = "n"
                 case str() as name, SecretStr():
                     value = fld.value.get_secret_value()
                 case (name, value) if (name != "n") and (value is not None):
@@ -278,6 +285,7 @@ def make_set_up_cmd(
     @argument("cluster", type=Str())
     @argument("stanza", type=Str())
     @argument("path", type=utilities.click.Path(exist="dir if exists"))
+    @flag("--bundle", default=None, help="Bundle files in repository")
     @option(
         "--cipher-pass",
         type=utilities.click.SecretStr(),
@@ -305,7 +313,7 @@ def make_set_up_cmd(
     @option(
         "--type",
         type=Enum(RepoType),
-        default=DEFAULT_REPO_TYPE,
+        default=None,
         help="Type of storage used for the repository",
     )
     @option("--s3-bucket", type=Str(), default=None, help="S3 repository bucket")
@@ -343,11 +351,12 @@ def make_set_up_cmd(
         cluster: str,
         stanza: str,
         path: PathLike,
+        bundle: bool | None,
         cipher_pass: SecretLike | None,
         cipher_type: CipherType | None,
         retention_diff: int | None,
         retention_full: int | None,
-        type: RepoType,  # noqa: A002
+        type: RepoType | None,  # noqa: A002
         s3_bucket: str | None,
         s3_endpoint: str | None,
         s3_key: SecretLike | None,
@@ -365,6 +374,7 @@ def make_set_up_cmd(
         set_up_logging(__name__, root=True, log_version=__version__)
         repo = RepoSpec(
             Path(path),
+            bundle=bundle,
             cipher_pass=None if cipher_pass is None else ensure_secret(cipher_pass),
             cipher_type=cipher_type,
             retention_diff=retention_diff,
