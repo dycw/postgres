@@ -21,7 +21,7 @@ from utilities.core import (
     set_up_logging,
     to_logger,
 )
-from utilities.pydantic import extract_secret
+from utilities.pydantic import ensure_secret, extract_secret
 from utilities.subprocess import chown, copy_text, maybe_sudo_cmd, rm, run
 
 from postgres import __version__
@@ -188,7 +188,7 @@ class RepoSpec:
     repo_type: RepoType = field(default=DEFAULT_REPO_TYPE, kw_only=True)
     retention_diff: int | None = field(default=None, kw_only=True)
     retention_full: int | None = field(default=None, kw_only=True)
-    s3_bucket: Path | None = field(default=None, kw_only=True)
+    s3_bucket: str | None = field(default=None, kw_only=True)
     s3_endpoint: str | None = field(default=None, kw_only=True)
     s3_key: pydantic.SecretStr | None = field(default=None, kw_only=True)
     s3_key_secret: pydantic.SecretStr | None = field(default=None, kw_only=True)
@@ -230,14 +230,51 @@ def make_set_up_cmd(
         default=DEFAULT_REPO_TYPE,
         help="Type of storage used for the repository",
     )
+    @option(
+        "--retention-diff",
+        type=int,
+        default=None,
+        help="Number of differential backups to retain",
+    )
+    @option(
+        "--retention-full",
+        type=int,
+        default=None,
+        help="Full backup retention count/time",
+    )
+    @option("--s3-bucket", type=Str(), default=None, help="S3 repository bucket")
+    @option("--s3-endpoint", type=Str(), default=None, help="S3 repository endpoint")
+    @option(
+        "--s3-key",
+        type=utilities.click.SecretStr(),
+        default=None,
+        help="S3 repository access key",
+    )
+    @option(
+        "--s3-key-secret",
+        type=utilities.click.SecretStr(),
+        default=None,
+        help="S3 repository secret access key",
+    )
+    @option("--s3-region", type=Str(), default=None, help="S3 repository region")
     @sudo_option
     @option("--port", type=int, default=PORT, help="Cluster port")
     @root_option
-    def set_up_sub_cmd(
+    def func(
         *,
         name: str,
         password: SecretLike,
-        # ..
+        path: PathLike,
+        cipher_pass: SecretLike | None,
+        cipher_type: CipherType,
+        repo_type: RepoType,
+        retention_diff: int | None,
+        retention_full: int | None,
+        s3_bucket: str | None,
+        s3_endpoint: str | None,
+        s3_key: SecretLike | None,
+        s3_key_secret: SecretLike | None,
+        s3_region: str | None,
         sudo: bool = False,
         version: int = VERSION,
         port: int = PORT,
@@ -246,7 +283,21 @@ def make_set_up_cmd(
         if is_pytest():
             return
         set_up_logging(__name__, root=True, log_version=__version__)
-        repo = RepoSpec()
+        repo = RepoSpec(
+            Path(path),
+            cipher_pass=None if cipher_pass is None else ensure_secret(cipher_pass),
+            cipher_type=cipher_type,
+            repo_type=repo_type,
+            retention_diff=retention_diff,
+            retention_full=retention_full,
+            s3_bucket=s3_bucket,
+            s3_endpoint=s3_endpoint,
+            s3_key=None if s3_key is None else ensure_secret(s3_key),
+            s3_key_secret=None
+            if s3_key_secret is None
+            else ensure_secret(s3_key_secret),
+            s3_region=s3_region,
+        )
         set_up(name, password, repo, sudo=sudo, version=version, port=port, root=root)
 
     return cli(name=name, help="Set up 'pgbackrest'", **CONTEXT_SETTINGS)(func)
