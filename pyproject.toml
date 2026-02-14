@@ -13,7 +13,7 @@
     "click>=8.3.1",
     "dycw-installer>=0.9.1",
     "dycw-utilities>=0.191.0",
-  ]
+]
   description = "Library to operate `postgres` and `pgbackrest`"
   name = "dycw-postgres"
   readme = "README.md"
