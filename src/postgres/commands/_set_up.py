@@ -2,19 +2,22 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, assert_never
 
-from installer import get_root, set_up_pgbackrest, set_up_postgres
-from pydantic import SecretStr
-from utilities.core import get_local_ip, substitute, to_logger
-from utilities.subprocess import copy_text, maybe_sudo_cmd, rm, run
+import utilities.click
+from installer import get_root, set_up_pgbackrest, set_up_postgres, ssh_option
+from utilities.click import Str, argument
+from utilities.core import get_local_ip, to_logger
+from utilities.subprocess import chown, copy_text, maybe_sudo_cmd, rm, run
 
-from postgres._constants import PATH_CONFIGS, PORT, VERSION
-from postgres._enums import DEFAULT_REPO_TYPE, RepoType
-from postgres._utilities import drop_cluster
+from postgres._constants import PATH_CONFIGS, PORT, PROCESSES, VERSION
+from postgres._enums import DEFAULT_CIPHER_TYPE, DEFAULT_REPO_TYPE, CipherType, RepoType
+from postgres._utilities import drop_cluster, get_pg_root
 
 if TYPE_CHECKING:
+    import pydantic
     from utilities.types import PathLike, SecretLike
+
 
 _LOGGER = to_logger(__name__)
 
@@ -25,8 +28,9 @@ _LOGGER = to_logger(__name__)
 def set_up(
     name: str,
     password: SecretLike,
+    repo: RepoSpec,
     /,
-    *,
+    *repos: RepoSpec,
     sudo: bool = False,
     version: int = VERSION,
     port: int = PORT,
@@ -41,9 +45,9 @@ def set_up(
     _set_up_pg_hba(name, version=version, root=root, sudo=sudo)
     _set_up_postgresql_conf(name, version=version, root=root, sudo=sudo)
     _remove_debian_pgbackrest_conf(root=root, sudo=sudo)
-    _set_up_pgbackrest(name, root=root, sudo=sudo, version=version)
-    _change_ownership()
-    _restart_cluster(version=version, name=name)
+    _set_up_pgbackrest(name, repo, *repos, root=root, sudo=sudo, version=version)
+    _change_ownership(root=root, sudo=sudo)
+    _restart_cluster(name, sudo=sudo, version=version)
     _set_postgres_password(password=password)
     ensure_git_clone("gitea", "qrt", "postgres")
     _LOGGER.info("Finished setting up Postgres")
@@ -66,7 +70,7 @@ def _set_up_pg_hba(
     sudo: bool = False,
 ) -> None:
     _LOGGER.info("Setting up '%d-pg_hba.conf'...", version)
-    pg_root = _get_pg_root(name, root=root, version=version)
+    pg_root = get_pg_root(root=root, version=version, name=name)
     copy_text(
         PATH_CONFIGS / "pg_hba_conf.conf",
         pg_root / "pg_hba.conf",
@@ -81,12 +85,6 @@ def _set_up_pg_hba(
     )
 
 
-def _get_pg_root(
-    name: str, /, *, root: PathLike | None = None, version: int = VERSION
-) -> Path:
-    return get_root(root=root) / "etc/postgresql" / str(version) / name
-
-
 def _set_up_postgresql_conf(
     name: str,
     /,
@@ -96,7 +94,7 @@ def _set_up_postgresql_conf(
     sudo: bool = False,
 ) -> None:
     _LOGGER.info("Setting up '%d-postgresql.conf'...", version)
-    pg_root = _get_pg_root(name, root=root, version=version)
+    pg_root = get_pg_root(root=root, version=version, name=name)
     copy_text(
         PATH_CONFIGS / "postgresql.conf",
         pg_root / "conf.d/custom.conf",
@@ -116,45 +114,24 @@ def _remove_debian_pgbackrest_conf(
 
 def _set_up_pgbackrest(
     name: str,
+    repo: RepoSpec,
     /,
-    *,
+    *repos: RepoSpec,
     root: PathLike | None = None,
     sudo: bool = False,
+    processes: int = PROCESSES,
     version: int = VERSION,
 ) -> None:
     _LOGGER.info("Setting up 'pgbackrest.conf'...")
     dest = get_root(root=root) / "etc/pgbackrest/pgbackrest.conf"
+    all_repos = [repo, *repos]
     copy_text(
         PATH_CONFIGS / "pgbackrest.conf",
         dest,
+        sudo=sudo,
         substitutions={
-            "PROCESS_MAX": max(round(CPU_COUNT / 4), 1),
-            "CIPHER_PASS": POSTGRES_SETTINGS.pgbackrest.cipher_pass.get_secret_value(),
-            "TRUENAS_PATH": _ensure_leading_slash(
-                MOUNT_SETTINGS.datasets.postgres.local
-            ),
-            "TRUENAS_RETENTION_DIFF": POSTGRES_SETTINGS.backup.truenas.retention.diff,
-            "TRUENAS_RETENTION_FULL": POSTGRES_SETTINGS.backup.truenas.retention.full,
-            "BACKBLAZE_QRT_PATH": _ensure_leading_slash(
-                POSTGRES_SETTINGS.backup.backblaze.qrt.path
-            ),
-            "BACKBLAZE_QRT_RETENTION_DIFF": POSTGRES_SETTINGS.backup.backblaze.qrt.retention.diff,
-            "BACKBLAZE_QRT_RETENTION_FULL": POSTGRES_SETTINGS.backup.backblaze.qrt.retention.full,
-            "BACKBLAZE_QRT_BUCKET": qrt.bucket,
-            "BACKBLAZE_QRT_ENDPOINT": qrt.endpoint,
-            "BACKBLAZE_QRT_APPLICATION_KEY": qrt.application_key.get_secret_value(),
-            "BACKBLAZE_QRT_KEY_ID": qrt.key_id.get_secret_value(),
-            "BACKBLAZE_QRT_REGION": qrt.region,
-            "BACKBLAZE_DYCW_PATH": _ensure_leading_slash(
-                POSTGRES_SETTINGS.backup.backblaze.dycw.path
-            ),
-            "BACKBLAZE_DYCW_RETENTION_DIFF": POSTGRES_SETTINGS.backup.backblaze.dycw.retention.diff,
-            "BACKBLAZE_DYCW_RETENTION_FULL": POSTGRES_SETTINGS.backup.backblaze.dycw.retention.full,
-            "BACKBLAZE_DYCW_BUCKET": dycw.bucket,
-            "BACKBLAZE_DYCW_ENDPOINT": dycw.endpoint,
-            "BACKBLAZE_DYCW_APPLICATION_KEY": dycw.application_key.get_secret_value(),
-            "BACKBLAZE_DYCW_KEY_ID": dycw.key_id.get_secret_value(),
-            "BACKBLAZE_DYCW_REGION": dycw.region,
+            "PROCESS_MAX": processes,
+            "REPOS": "".join(r.text for r in all_repos),
             "NAME": name,
             "VERSION": version,
         },
@@ -162,24 +139,18 @@ def _set_up_pgbackrest(
     )
 
 
-def _ensure_leading_slash(path: PathLike, /) -> Path:
-    return Path("/") / path
-
-
-def _change_ownership(*, __root: PathLike | None = None) -> None:
+def _change_ownership(*, root: PathLike | None = None, sudo: bool = False) -> None:
     _LOGGER.info("Changing ownership of 'postgres'...")
-    root = FILE_SYSTEM_ROOT if __root is None else Path(__root)
-    path = root / "etc/postgresql"
-    chown(path, recursive=True, user="postgres", group="postgres")
+    path = get_pg_root(root=root)
+    chown(path, sudo=sudo, recursive=True, owner="postgres", group="postgres")
 
 
 def _restart_cluster(
-    *,
-    version: int = POSTGRES_SETTINGS.postgres.version,
-    name: str = POSTGRES_SETTINGS.postgres.name,
+    name: str, /, *, sudo: bool = False, version: int = VERSION
 ) -> None:
     _LOGGER.info("Restarting cluster...")
-    run("pg_ctlcluster", str(version), name, "restart")
+    args: list[str] = ["pg_ctlcluster", str(version), name, "restart"]
+    run(*maybe_sudo_cmd(*args, sudo=sudo))
 
 
 def _set_postgres_password(
@@ -230,35 +201,34 @@ def _set_up_remote(
 
 
 @dataclass(order=True, unsafe_hash=True, slots=True)
-class Repo:
+class RepoSpec:
     path: Path = field(kw_only=True)
     n: int = field(default=1)
-    cipher_pass: SecretStr | None = field(default=None, kw_only=True)
+    cipher_pass: pydantic.SecretStr | None = field(default=None, kw_only=True)
+    cipher_type: CipherType | None = field(default=DEFAULT_CIPHER_TYPE, kw_only=True)
     repo_type: RepoType = field(default=DEFAULT_REPO_TYPE, kw_only=True)
+    retention_diff: int | None = field(default=None, kw_only=True)
+    retention_full: int | None = field(default=None, kw_only=True)
+    s3_bucket: Path | None = field(default=None, kw_only=True)
+    s3_endpoint: str | None = field(default=None, kw_only=True)
+    s3_key: pydantic.SecretStr | None = field(default=None, kw_only=True)
+    s3_key_secret: pydantic.SecretStr | None = field(default=None, kw_only=True)
+    s3_region: str | None = field(default=None, kw_only=True)
 
     @property
     def text(self) -> str:
-        return substitute(
-            (PATH_CONFIGS / "job.tmpl"),
-            SCHEDULE=self.schedule,
-            USER=self.user,
-            NAME=self.name,
-            TIMEOUT=round(duration_to_seconds(self.timeout)),
-            KILL_AFTER=round(duration_to_seconds(self.kill_after)),
-            COMMAND=self.command,
-            COMMAND_ARGS_SPACE=" "
-            if (self.args is not None) and (len(self.args) >= 1)
-            else "",
-            SUDO="sudo" if self.sudo else "",
-            SUDO_TEE_SPACE=" " if self.sudo else "",
-            ARGS="" if self.args is None else " ".join(self.args),
-            LOG=self.log_use,
-        )
+        raise NotImplementedError
+
+    @property
+    def _path_leading(self) -> Path:
+        return Path("/") / self.path
 
 
 ##
 
 
+@argument("name", type=Str())
+@argument("password", type=utilities.click.SecretStr())
 @ssh_option
 @option(
     "--os-password",

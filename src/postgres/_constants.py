@@ -9,10 +9,11 @@ if TYPE_CHECKING:
 
 
 PORT: int = 5432
+PROCESSES: int = 1
 VERSION: int = 17
 
 
 PATH_CONFIGS: Path = files(anchor="postgres") / "configs"
 
 
-__all__ = ["PATH_CONFIGS", "PORT", "VERSION"]
+__all__ = ["PATH_CONFIGS", "PORT", "PROCESSES", "VERSION"]

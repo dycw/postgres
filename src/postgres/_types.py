@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-type Repo = str | int
+type Restorable = str | int
 
 
-__all__ = ["Repo"]
+__all__ = ["Restorable"]

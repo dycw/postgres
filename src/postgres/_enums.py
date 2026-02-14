@@ -26,6 +26,20 @@ class BackupType(StrEnum):
 DEFAULT_BACKUP_TYPE = BackupType.incr
 
 
+##
+
+
+@unique
+class CipherType(StrEnum):
+    aes_256_cbc = "aes-256-cbc"
+
+
+DEFAULT_CIPHER_TYPE = CipherType.aes_256_cbc
+
+
+##
+
+
 @unique
 class RepoType(StrEnum):
     azure = "azure"
@@ -39,4 +53,11 @@ class RepoType(StrEnum):
 DEFAULT_REPO_TYPE = RepoType.posix
 
 
-__all__ = ["DEFAULT_BACKUP_TYPE", "DEFAULT_REPO_TYPE", "BackupType", "RepoType"]
+__all__ = [
+    "DEFAULT_BACKUP_TYPE",
+    "DEFAULT_CIPHER_TYPE",
+    "DEFAULT_REPO_TYPE",
+    "BackupType",
+    "CipherType",
+    "RepoType",
+]

@@ -13,7 +13,6 @@ from utilities.types import PathLike
 from postgres import __version__
 from postgres._click import repo_option, stanza_argument, user_option, version_option
 from postgres._constants import VERSION
-from postgres._types import Repo
 from postgres._utilities import run_or_as_user, to_repo_num
 
 if TYPE_CHECKING:
@@ -21,7 +20,7 @@ if TYPE_CHECKING:
 
     from utilities.types import PathLike
 
-    from postgres._types import Repo
+    from postgres._types import Restorable
 
 
 _LOGGER = to_logger(__name__)
@@ -36,7 +35,7 @@ def restore(
     /,
     *,
     version: int = VERSION,
-    repo: Repo | None = None,
+    repo: Restorable | None = None,
     repo_mapping: Mapping[str, int] | None = None,
     target_timeline: int | None = None,
     user: str | None = None,
@@ -72,7 +71,7 @@ def _run_restore(
     stanza: str,
     /,
     *,
-    repo: Repo | None = None,
+    repo: Restorable | None = None,
     repo_mapping: Mapping[str, int] | None = None,
     target_timeline: int | None = None,
     user: str | None = None,
@@ -119,7 +118,7 @@ def make_restore_cmd(
         cluster: str,
         stanza: str,
         version: int,
-        repo: Repo | None,
+        repo: Restorable | None,
         target_timeline: int | None,
         user: str | None,
     ) -> None:
