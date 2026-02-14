@@ -4,27 +4,32 @@
 
 
 [dependency-groups]
-  dev = ["dycw-utilities[test]>=0.189.1", "orjson>=3.11.7", "pyright>=1.1.408"]
+  dev = ["dycw-utilities[test]>=0.191.0", "orjson>=3.11.7", "pyright>=1.1.408"]
 
 
 [project]
   authors = [{ email = "d.wan@icloud.com", name = "Derek Wan" }]
-  dependencies = ["click>=8.3.1", "dycw-utilities>=0.189.1"]
+  dependencies = [
+    "click>=8.3.1",
+    "dycw-installer>=0.9.1",
+    "dycw-utilities>=0.191.0",
+  ]
   description = "Library to operate `postgres` and `pgbackrest`"
   name = "dycw-postgres"
   readme = "README.md"
   requires-python = ">= 3.12"
-  version = "0.2.0"
+  version = "0.2.1"
 
   [project.optional-dependencies]
-    cli = ["click==8.3.1", "dycw-utilities==0.189.1"]
+    cli = ["click==8.3.1", "dycw-installer==0.9.1", "dycw-utilities==0.191.0"]
 
   [project.scripts]
     backup = "postgres._cli:backup_cli"
     check = "postgres._cli:check_cli"
+    cli = "postgres._cli:group_cli"
     info = "postgres._cli:info_cli"
-    postgres-cli = "postgres._cli:group_cli"
     restore = "postgres._cli:restore_cli"
+    set-up = "postgres._cli:set_up_cli"
     stanza-create = "postgres._cli:stanza_create_cli"
     start = "postgres._cli:start_cli"
     stop = "postgres._cli:stop_cli"

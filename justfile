@@ -6,7 +6,7 @@ set positional-arguments := true
 
 # CLI entrypoint
 @cli *args:
-  postgres-cli {{args}}
+  cli {{args}}
 
 # Backup a database cluster
 @backup *args:
@@ -23,6 +23,10 @@ set positional-arguments := true
 # Restore a database cluster
 @restore *args:
   restore {{args}}
+
+# Set up 'postgres' and 'pgbackrest'
+@set-up *args:
+  set-up {{args}}
 
 # Create the required stanza data
 @stanza-create *args:

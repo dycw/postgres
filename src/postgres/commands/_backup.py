@@ -13,7 +13,7 @@ from postgres._click import (
     type_default_option,
     user_option,
 )
-from postgres._enums import DEFAULT_TYPE
+from postgres._enums import DEFAULT_BACKUP_TYPE
 from postgres._utilities import run_or_as_user, to_repo_num
 
 if TYPE_CHECKING:
@@ -22,8 +22,8 @@ if TYPE_CHECKING:
     from click import Command
     from utilities.types import MaybeIterable
 
-    from postgres._enums import Type
-    from postgres._types import Repo
+    from postgres._enums import BackupType
+    from postgres._types import RepoNumOrName
 
 
 _LOGGER = to_logger(__name__)
@@ -36,9 +36,9 @@ def backup(
     stanza: str,
     /,
     *,
-    repo: MaybeIterable[Repo] | None = None,
+    repo: MaybeIterable[RepoNumOrName] | None = None,
     repo_mapping: Mapping[str, int] | None = None,
-    type_: Type = DEFAULT_TYPE,
+    type_: BackupType = DEFAULT_BACKUP_TYPE,
     user: str | None = None,
 ) -> None:
     if repo is None:
@@ -54,9 +54,9 @@ def _backup_core(
     stanza: str,
     /,
     *,
-    repo: Repo | None = None,
+    repo: RepoNumOrName | None = None,
     repo_mapping: Mapping[str, int] | None = None,
-    type_: Type = DEFAULT_TYPE,
+    type_: BackupType = DEFAULT_BACKUP_TYPE,
     user: str | None = None,
 ) -> None:
     args: list[str] = ["pgbackrest"]
@@ -85,7 +85,9 @@ def make_backup_cmd(
     @type_default_option
     @repo_option
     @user_option
-    def func(*, stanza: str, type_: Type, repo: Repo | None, user: str | None) -> None:
+    def func(
+        *, stanza: str, type_: BackupType, repo: RepoNumOrName | None, user: str | None
+    ) -> None:
         if is_pytest():
             return
         set_up_logging(__name__, root=True, log_version=__version__)

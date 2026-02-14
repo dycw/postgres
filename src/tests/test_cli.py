@@ -14,6 +14,7 @@ from postgres._cli import (
     group_cli,
     info_cli,
     restore_cli,
+    set_up_cli,
     stanza_create_cli,
     start_cli,
     stop_cli,
@@ -39,6 +40,9 @@ class TestCLI:
             # restore
             param(restore_cli, ["cluster", "stanza"]),
             param(group_cli, ["restore", "cluster", "stanza"]),
+            # set-up
+            param(set_up_cli, ["name", "path"]),
+            param(group_cli, ["set-up", "name", "path"]),
             # stanza-create
             param(stanza_create_cli, ["stanza"]),
             param(group_cli, ["stanza-create", "stanza"]),
@@ -58,24 +62,17 @@ class TestCLI:
         result = runner.invoke(command, args)
         assert result.exit_code == 0, result.stderr
 
-    @throttle_test(duration=MINUTE)
-    def test_entrypoint(self) -> None:
-        run("postgres-cli", "--help")
-
-    @skipif_ci
-    @throttle_test(duration=MINUTE)
-    def test_justfile(self) -> None:
-        run("just", "cli", "--help")
-
     @mark.parametrize("head", [param([]), param(["just"], marks=skipif_ci)])
     @mark.parametrize(
         "arg",
         [
             param("backup"),
             param("check"),
+            param("cli"),
             param("info"),
             param("restore"),
             param("stanza-create"),
+            param("set-up"),
             param("start"),
             param("stop"),
         ],
