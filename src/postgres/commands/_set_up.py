@@ -31,7 +31,7 @@ from utilities.subprocess import chown, copy_text, maybe_sudo_cmd, rm, run
 
 from postgres import __version__
 from postgres._constants import PATH_CONFIGS, PORT, PROCESSES, VERSION
-from postgres._enums import DEFAULT_CIPHER_TYPE, DEFAULT_REPO_TYPE, CipherType, RepoType
+from postgres._enums import DEFAULT_REPO_TYPE, CipherType, RepoType
 from postgres._utilities import drop_cluster, get_pg_root, run_or_as_user
 
 if TYPE_CHECKING:
@@ -263,9 +263,9 @@ def make_set_up_cmd(
         help="Repository cipher passphrase",
     )
     @option(
-        "--cipher-pass",
+        "--cipher-type",
         type=Enum(CipherType),
-        default=DEFAULT_CIPHER_TYPE,
+        default=None,
         help="Cipher used to encrypt the repository",
     )
     @option(
@@ -310,7 +310,7 @@ def make_set_up_cmd(
         password: SecretLike,
         path: PathLike,
         cipher_pass: SecretLike | None,
-        cipher_type: CipherType,
+        cipher_type: CipherType | None,
         repo_type: RepoType,
         retention_diff: int | None,
         retention_full: int | None,
@@ -344,7 +344,9 @@ def make_set_up_cmd(
         )
         set_up(name, password, repo, sudo=sudo, version=version, port=port, root=root)
 
-    return cli(name=name, help="Set up 'pgbackrest'", **CONTEXT_SETTINGS)(func)
+    return cli(
+        name=name, help="Set up 'postgres' and 'pgbackrest'", **CONTEXT_SETTINGS
+    )(func)
 
 
 __all__ = ["make_set_up_cmd", "set_up"]

@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from click import Command
 
     from postgres._enums import BackupType
-    from postgres._types import Repo
+    from postgres._types import RepoNumOrName
 
 
 _LOGGER = to_logger(__name__)
@@ -32,7 +32,7 @@ _LOGGER = to_logger(__name__)
 
 def info(
     *,
-    repo: Repo | None = None,
+    repo: RepoNumOrName | None = None,
     repo_mapping: Mapping[str, int] | None = None,
     stanza: str | None = None,
     type_: BackupType | None = None,
@@ -63,7 +63,7 @@ def make_info_cmd(
     @user_option
     def func(
         *,
-        repo: Repo | None,
+        repo: RepoNumOrName | None,
         stanza: str | None,
         type_: BackupType | None,
         user: str | None,

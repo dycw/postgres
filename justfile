@@ -24,6 +24,10 @@ set positional-arguments := true
 @restore *args:
   restore {{args}}
 
+# Set up 'postgres' and 'pgbackrest'
+@set-up *args:
+  set-up {{args}}
+
 # Create the required stanza data
 @stanza-create *args:
   stanza-create {{args}}
