@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from postgres._click import (
     ClickRepoNumOrName,
+    repo_option,
     stanza_argument,
     stanza_option,
     type_default_option,
@@ -36,6 +37,7 @@ __all__ = [
     "RepoType",
     "drop_cluster",
     "get_pg_root",
+    "repo_option",
     "run_or_as_user",
     "stanza_argument",
     "stanza_option",
@@ -45,4 +47,4 @@ __all__ = [
     "user_option",
     "version_option",
 ]
-__version__ = "0.2.1"
+__version__ = "0.2.2"
