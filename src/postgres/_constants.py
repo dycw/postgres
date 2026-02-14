@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 PORT: int = 5432
-PROCESS_MAX: int = max(round(CPU_COUNT * 3 / 4), 1)
+PROCESS_MAX: int = max(round(CPU_COUNT / 4), 1)
 VERSION: int = 17
 
 
