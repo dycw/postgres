@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Self, assert_never
 
 import utilities.click
 from click import Command, command
@@ -13,6 +13,7 @@ from installer import (
     set_up_postgres,
     sudo_option,
 )
+from pydantic import SecretStr
 from utilities.click import CONTEXT_SETTINGS, Enum, Str, argument, option
 from utilities.constants import Sentinel, sentinel
 from utilities.core import (
@@ -251,15 +252,21 @@ class RepoSpec:
     def text(self) -> str:
         lines: list[str] = []
         for fld in yield_fields(self):
-            name, value = fld.name, fld.value
-            if (name != "n") and (value is not None):
+            match fld.name, fld.value:
+                case "path" as name, Path():
+                    value = Path("/") / fld.value
+                case str() as name, SecretStr():
+                    value = fld.value.get_secret_value()
+                case (name, value) if (name != "n") and (value is not None):
+                    ...
+                case _, _:
+                    name = value = None
+                case never:
+                    assert_never(never)
+            if (name is not None) and (value is not None):
                 key = f"repo{self.n}-{kebab_case(name)}"
                 lines.append(f"{key} = {value}")
         return normalize_str("\n".join(lines))
-
-    @property
-    def _path_leading(self) -> Path:
-        return Path("/") / self.path
 
 
 ##
