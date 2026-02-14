@@ -388,4 +388,4 @@ def make_set_up_cmd(
     )(func)
 
 
-__all__ = ["make_set_up_cmd", "set_up"]
+__all__ = ["RepoSpec", "make_set_up_cmd", "set_up"]
