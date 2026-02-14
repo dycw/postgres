@@ -49,7 +49,6 @@ _LOGGER = to_logger(__name__)
 
 def set_up(
     name: str,
-    password: SecretLike,
     repo: RepoSpec,
     /,
     *repos: RepoSpec,
@@ -57,6 +56,7 @@ def set_up(
     version: int = VERSION,
     port: int = PORT,
     root: PathLike | None = None,
+    password: SecretLike | None = None,
 ) -> None:
     _LOGGER.info("Setting up Postgres & pgBackRest...")
     set_up_postgres(sudo=sudo)
@@ -70,7 +70,8 @@ def set_up(
     _set_up_pgbackrest(name, repo, *repos, version=version, root=root, sudo=sudo)
     _change_ownership(root=root, sudo=sudo)
     _restart_cluster(name, version=version, sudo=sudo)
-    _set_postgres_password(password)
+    if password is not None:
+        _set_postgres_password(password)
     _LOGGER.info("Finished setting up Postgres & pgBackRest")
 
 
@@ -254,7 +255,6 @@ def make_set_up_cmd(
     *, cli: Callable[..., Command] = command, name: str | None = None
 ) -> Command:
     @argument("name", type=Str())
-    @argument("password", type=utilities.click.SecretStr())
     @argument("path", type=utilities.click.Path(exist="dir if exists"))
     @option(
         "--cipher-pass",
@@ -304,10 +304,15 @@ def make_set_up_cmd(
     @sudo_option
     @option("--port", type=int, default=PORT, help="Cluster port")
     @root_option
+    @option(
+        "--password",
+        type=utilities.click.SecretStr(),
+        default=None,
+        help="'postgres' user password",
+    )
     def func(
         *,
         name: str,
-        password: SecretLike,
         path: PathLike,
         cipher_pass: SecretLike | None,
         cipher_type: CipherType | None,
@@ -322,7 +327,8 @@ def make_set_up_cmd(
         sudo: bool = False,
         version: int = VERSION,
         port: int = PORT,
-        root: PathLike | None = None,
+        root: PathLike | None,
+        password: SecretLike | None,
     ) -> None:
         if is_pytest():
             return
@@ -342,7 +348,15 @@ def make_set_up_cmd(
             else ensure_secret(s3_key_secret),
             s3_region=s3_region,
         )
-        set_up(name, password, repo, sudo=sudo, version=version, port=port, root=root)
+        set_up(
+            name,
+            repo,
+            sudo=sudo,
+            version=version,
+            port=port,
+            root=root,
+            password=password,
+        )
 
     return cli(
         name=name, help="Set up 'postgres' and 'pgbackrest'", **CONTEXT_SETTINGS
