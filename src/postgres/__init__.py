@@ -10,7 +10,7 @@ from postgres._click import (
     user_option,
     version_option,
 )
-from postgres._constants import PATH_CONFIGS, PORT, PROCESSES, VERSION
+from postgres._constants import PATH_CONFIGS, PORT, PROCESS_MAX, VERSION
 from postgres._enums import (
     DEFAULT_BACKUP_TYPE,
     DEFAULT_CIPHER_TYPE,
@@ -28,7 +28,7 @@ __all__ = [
     "DEFAULT_REPO_TYPE",
     "PATH_CONFIGS",
     "PORT",
-    "PROCESSES",
+    "PROCESS_MAX",
     "VERSION",
     "BackupType",
     "CipherType",
@@ -47,4 +47,4 @@ __all__ = [
     "user_option",
     "version_option",
 ]
-__version__ = "0.2.2"
+__version__ = "0.2.3"
