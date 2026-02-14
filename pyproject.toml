@@ -26,9 +26,10 @@
   [project.scripts]
     backup = "postgres._cli:backup_cli"
     check = "postgres._cli:check_cli"
+    cli = "postgres._cli:group_cli"
     info = "postgres._cli:info_cli"
-    postgres-cli = "postgres._cli:group_cli"
     restore = "postgres._cli:restore_cli"
+    set-up = "postgres._cli:set_up_cli"
     stanza-create = "postgres._cli:stanza_create_cli"
     start = "postgres._cli:start_cli"
     stop = "postgres._cli:stop_cli"

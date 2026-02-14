@@ -14,6 +14,7 @@ from postgres._cli import (
     group_cli,
     info_cli,
     restore_cli,
+    set_up_cli,
     stanza_create_cli,
     start_cli,
     stop_cli,
@@ -39,6 +40,9 @@ class TestCLI:
             # restore
             param(restore_cli, ["cluster", "stanza"]),
             param(group_cli, ["restore", "cluster", "stanza"]),
+            # set-up
+            param(set_up_cli, ["cluster", "stanza"]),
+            param(group_cli, ["set-up", "cluster", "stanza"]),
             # stanza-create
             param(stanza_create_cli, ["stanza"]),
             param(group_cli, ["stanza-create", "stanza"]),
