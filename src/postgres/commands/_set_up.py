@@ -223,9 +223,9 @@ class RepoSpec:
         n: int | Sentinel = sentinel,
         cipher_pass: pydantic.SecretStr | None | Sentinel = sentinel,
         cipher_type: CipherType | None | Sentinel = sentinel,
-        repo_type: RepoType | None | Sentinel = sentinel,
         retention_diff: int | None | Sentinel = sentinel,
         retention_full: int | None | Sentinel = sentinel,
+        type: RepoType | None | Sentinel = sentinel,  # noqa: A002
         s3_bucket: str | None | Sentinel = sentinel,
         s3_endpoint: str | None | Sentinel = sentinel,
         s3_key: pydantic.SecretStr | None | Sentinel = sentinel,
@@ -238,9 +238,9 @@ class RepoSpec:
             n=n,
             cipher_pass=cipher_pass,
             cipher_type=cipher_type,
-            repo_type=repo_type,
             retention_diff=retention_diff,
             retention_full=retention_full,
+            type=type,
             s3_bucket=s3_bucket,
             s3_endpoint=s3_endpoint,
             s3_key=s3_key,
@@ -291,12 +291,6 @@ def make_set_up_cmd(
         help="Cipher used to encrypt the repository",
     )
     @option(
-        "--repo-type",
-        type=Enum(RepoType),
-        default=DEFAULT_REPO_TYPE,
-        help="Type of storage used for the repository",
-    )
-    @option(
         "--retention-diff",
         type=int,
         default=None,
@@ -307,6 +301,13 @@ def make_set_up_cmd(
         type=int,
         default=None,
         help="Full backup retention count/time",
+    )
+    @option(
+        "--type",
+        "type_",
+        type=Enum(RepoType),
+        default=DEFAULT_REPO_TYPE,
+        help="Type of storage used for the repository",
     )
     @option("--s3-bucket", type=Str(), default=None, help="S3 repository bucket")
     @option("--s3-endpoint", type=Str(), default=None, help="S3 repository endpoint")
@@ -345,9 +346,9 @@ def make_set_up_cmd(
         path: PathLike,
         cipher_pass: SecretLike | None,
         cipher_type: CipherType | None,
-        repo_type: RepoType,
         retention_diff: int | None,
         retention_full: int | None,
+        type_: RepoType,
         s3_bucket: str | None,
         s3_endpoint: str | None,
         s3_key: SecretLike | None,
@@ -367,9 +368,9 @@ def make_set_up_cmd(
             Path(path),
             cipher_pass=None if cipher_pass is None else ensure_secret(cipher_pass),
             cipher_type=cipher_type,
-            type=repo_type,
             retention_diff=retention_diff,
             retention_full=retention_full,
+            type=type_,
             s3_bucket=s3_bucket,
             s3_endpoint=s3_endpoint,
             s3_key=None if s3_key is None else ensure_secret(s3_key),
