@@ -49,14 +49,6 @@ class TestRepoSpec:
         """)
         assert text == expected
 
-    def test_repo_type(self) -> None:
-        text = RepoSpec(Path("path"), type=RepoType.s3).text
-        expected = normalize_multi_line_str("""
-            repo1-path = /path
-            repo1-type = s3
-        """)
-        assert text == expected
-
     def test_retention_diff(self) -> None:
         text = RepoSpec(Path("path"), retention_diff=1).text
         expected = normalize_multi_line_str("""
@@ -72,6 +64,14 @@ class TestRepoSpec:
             repo1-path = /path
             repo1-retention-full = 1
             repo1-type = posix
+        """)
+        assert text == expected
+
+    def test_type(self) -> None:
+        text = RepoSpec(Path("path"), type=RepoType.s3).text
+        expected = normalize_multi_line_str("""
+            repo1-path = /path
+            repo1-type = s3
         """)
         assert text == expected
 
