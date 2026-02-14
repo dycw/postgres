@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 class ClickRepoNumOrName(ParamType):
-    name = "restorable"
+    name = "repo num or name"
 
     @override
     def __repr__(self) -> str:
