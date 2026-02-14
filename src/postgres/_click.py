@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, override
 from click import Context, Parameter, ParamType
 from utilities.click import Enum, Str, argument, option
 
-from postgres._constants import POSTGRES_VERSION
+from postgres._constants import VERSION
 from postgres._enums import DEFAULT_TYPE, Type
 
 if TYPE_CHECKING:
@@ -40,9 +40,7 @@ type_default_option, type_no_default_option = [
     for d in [DEFAULT_TYPE, None]
 ]
 user_option = option("--user", type=Str(), default=None, help="User to run as")
-version_option = option(
-    "--version", type=int, default=POSTGRES_VERSION, help="Postgres version"
-)
+version_option = option("--version", type=int, default=VERSION, help="Postgres version")
 
 
 __all__ = [

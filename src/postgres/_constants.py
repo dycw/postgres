@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-POSTGRES_VERSION = 17
+PORT = 5432
+VERSION = 17
 
 
-__all__ = ["POSTGRES_VERSION"]
+__all__ = ["PORT", "VERSION"]
