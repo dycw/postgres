@@ -5,12 +5,13 @@ from typing import TYPE_CHECKING
 
 from installer import get_root, set_up_pgbackrest, set_up_postgres
 from utilities.core import to_logger
-from utilities.subprocess import run
+from utilities.subprocess import copy_text, maybe_sudo_cmd, run
 
-from postgres._constants import PORT, VERSION
+from postgres._constants import PATH_CONFIGS, PORT, VERSION
+from postgres._utilities import drop_cluster
 
 if TYPE_CHECKING:
-    from utilities.types import PathLike
+    from utilities.types import PathLike, SecretLike
 
 _LOGGER = to_logger(__name__)
 
@@ -19,57 +20,56 @@ _LOGGER = to_logger(__name__)
 
 
 def set_up(
+    name: str,
+    password: SecretLike,
+    /,
     *,
+    version: int = VERSION,
     sudo: bool = False,
-    os_password: SecretLike | None = None,
-    port: int = POSTGRES_SETTINGS.postgres.port,
-    version: int = POSTGRES_SETTINGS.postgres.version,
-    name: str = POSTGRES_SETTINGS.postgres.name,
-    pg_password: SecretLike = POSTGRES_SETTINGS.postgres.password,
+    port: int = PORT,
 ) -> None:
     _LOGGER.info("Setting up Postgres & pgBackRest...")
     set_up_postgres(sudo=sudo)
     set_up_pgbackrest(sudo=sudo)
-    _drop_main_cluster(version=version)
-    _drop_cluster(name, version=version)
-    _create_cluster(port=port, version=version, name=name)
-    _set_up_pg_hba(version=version, name=name)
+    drop_cluster("main", version=version, sudo=sudo)
+    drop_cluster(name, version=version, sudo=sudo)
+    _create_cluster(name, version=version, port=port, sudo=sudo)
+    _set_up_pg_hba(name, root=root, version=version, sudo=sudo)
     _set_up_postgresql_conf(version=version, name=name)
     _remove_debian_pgbackrest_conf()
     _set_up_pgbackrest(version=version, name=name)
     _change_ownership()
     _restart_cluster(version=version, name=name)
-    _set_postgres_password(password=pg_password)
+    _set_postgres_password(password=password)
     ensure_git_clone("gitea", "qrt", "postgres")
     _LOGGER.info("Finished setting up Postgres")
 
 
-def _drop_main_cluster(*, version: int = VERSION) -> None:
-    _LOGGER.info("Dropping cluster '%d-main'...", version)
-    run("pg_dropcluster", "--stop", str(version), "main", suppress=True)
-
-
-def _drop_cluster(name: str, /, *, version: int = VERSION) -> None:
-    _LOGGER.info("Dropping cluster '%d-%s'...", version, name)
-    run("pg_dropcluster", "--stop", str(version), name, suppress=True)
-
-
-def _create_cluster(name: str, /, *, version: int = VERSION, port: int = PORT) -> None:
+def _create_cluster(
+    name: str, /, *, version: int = VERSION, port: int = PORT, sudo: bool = False
+) -> None:
     _LOGGER.info("Creating cluster '%d-%s'...", version, name)
-    run("pg_createcluster", "--port", str(port), str(version), name)
+    args: list[str] = ["pg_createcluster", "--port", str(port), str(version), name]
+    run(*maybe_sudo_cmd(*args, sudo=sudo))
 
 
 def _set_up_pg_hba(
-    name: str, /, *, root: PathLike | None = None, version: int = VERSION
+    name: str,
+    /,
+    *,
+    root: PathLike | None = None,
+    version: int = VERSION,
+    sudo: bool = False,
 ) -> None:
     _LOGGER.info("Setting up '%d-pg_hba.conf'...", version)
-    root = _get_pg_root(name, root=root, version=version)
-    copy_text(configs.pg_hba_conf, root / "pg_hba.conf", perms="u=rw,g=r,o=r")
+    pg_root = _get_pg_root(name, root=root, version=version)
     copy_text(
-        configs.pg_hba_custom_conf,
-        root / "pg_hba.conf.d/custom.conf",
+        PATH_CONFIGS / "pg_hba_conf.conf",
+        pg_root / "pg_hba.conf",
+        sudo=sudo,
         perms="u=rw,g=r,o=r",
     )
+    copy_text(PATH_CONFIGS, root / "pg_hba.conf.d/custom.conf", perms="u=rw,g=r,o=r")
 
 
 def _get_pg_root(
@@ -285,7 +285,7 @@ def set_up_sub_cmd(
         port=port,
         version=version,
         name=name,
-        pg_password=pg_password,
+        password=pg_password,
     )
 
 

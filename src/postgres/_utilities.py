@@ -4,12 +4,30 @@ from collections.abc import Callable, Mapping
 from shlex import join
 from typing import TYPE_CHECKING, assert_never
 
-from utilities.subprocess import run
+from utilities.core import to_logger
+from utilities.subprocess import maybe_sudo_cmd, run
+
+from postgres._constants import VERSION
 
 if TYPE_CHECKING:
     from utilities.types import LoggerLike, PathLike, Retry, StrStrMapping
 
     from postgres._types import Repo
+
+
+_LOGGER = to_logger(__name__)
+
+
+##
+
+
+def drop_cluster(name: str, /, *, version: int = VERSION, sudo: bool = False) -> None:
+    _LOGGER.info("Dropping cluster '%d-%s'...", version, name)
+    args: list[str] = ["pg_dropcluster", "--stop", str(version), name]
+    run(*maybe_sudo_cmd(*args, sudo=sudo), suppress=True)
+
+
+##
 
 
 def to_repo_num(
@@ -86,4 +104,4 @@ def run_or_as_user(
         )
 
 
-__all__ = ["to_repo_num"]
+__all__ = ["drop_cluster", "run_or_as_user", "to_repo_num"]

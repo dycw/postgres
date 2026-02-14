@@ -12,7 +12,7 @@ from postgres._click import (
 from postgres._constants import PATH_CONFIGS, PORT, VERSION
 from postgres._enums import DEFAULT_TYPE, Type
 from postgres._types import Repo
-from postgres._utilities import run_or_as_user, to_repo_num
+from postgres._utilities import drop_cluster, run_or_as_user, to_repo_num
 
 __all__ = [
     "DEFAULT_TYPE",
@@ -22,6 +22,7 @@ __all__ = [
     "ClickRepo",
     "Repo",
     "Type",
+    "drop_cluster",
     "run_or_as_user",
     "stanza_argument",
     "stanza_option",
