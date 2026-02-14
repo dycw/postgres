@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
     from click import Command
 
-    from postgres._enums import Type
+    from postgres._enums import BackupType
     from postgres._types import Repo
 
 
@@ -35,7 +35,7 @@ def info(
     repo: Repo | None = None,
     repo_mapping: Mapping[str, int] | None = None,
     stanza: str | None = None,
-    type_: Type | None = None,
+    type_: BackupType | None = None,
     user: str | None = None,
 ) -> None:
     _LOGGER.info("Getting info...")
@@ -62,7 +62,11 @@ def make_info_cmd(
     @type_no_default_option
     @user_option
     def func(
-        *, repo: Repo | None, stanza: str | None, type_: Type | None, user: str | None
+        *,
+        repo: Repo | None,
+        stanza: str | None,
+        type_: BackupType | None,
+        user: str | None,
     ) -> None:
         if is_pytest():
             return

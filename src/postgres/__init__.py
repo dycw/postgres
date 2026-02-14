@@ -10,18 +10,20 @@ from postgres._click import (
     version_option,
 )
 from postgres._constants import PATH_CONFIGS, PORT, VERSION
-from postgres._enums import DEFAULT_TYPE, Type
+from postgres._enums import DEFAULT_BACKUP_TYPE, DEFAULT_REPO_TYPE, BackupType, RepoType
 from postgres._types import Repo
 from postgres._utilities import drop_cluster, run_or_as_user, to_repo_num
 
 __all__ = [
-    "DEFAULT_TYPE",
+    "DEFAULT_BACKUP_TYPE",
+    "DEFAULT_REPO_TYPE",
     "PATH_CONFIGS",
     "PORT",
     "VERSION",
+    "BackupType",
     "ClickRepo",
     "Repo",
-    "Type",
+    "RepoType",
     "drop_cluster",
     "run_or_as_user",
     "stanza_argument",

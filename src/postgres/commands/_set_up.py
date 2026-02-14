@@ -1,17 +1,18 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from installer import get_root, set_up_pgbackrest, set_up_postgres
-from utilities.core import get_local_ip, to_logger
-from utilities.subprocess import copy_text, maybe_sudo_cmd, run
+from utilities.core import get_local_ip, substitute, to_logger
+from utilities.subprocess import copy_text, maybe_sudo_cmd, rm, run
 
 from postgres._constants import PATH_CONFIGS, PORT, VERSION
 from postgres._utilities import drop_cluster
 
 if TYPE_CHECKING:
-    from utilities.types import PathLike, SecretLike
+    from utilities.types import Duration, PathLike, SecretLike
 
 _LOGGER = to_logger(__name__)
 
@@ -37,8 +38,8 @@ def set_up(
     _create_cluster(name, version=version, port=port, sudo=sudo)
     _set_up_pg_hba(name, version=version, root=root, sudo=sudo)
     _set_up_postgresql_conf(name, version=version, root=root, sudo=sudo)
-    _remove_debian_pgbackrest_conf()
-    _set_up_pgbackrest(version=version, name=name)
+    _remove_debian_pgbackrest_conf(root=root, sudo=sudo)
+    _set_up_pgbackrest(name, root=root, sudo=sudo, version=version)
     _change_ownership()
     _restart_cluster(version=version, name=name)
     _set_postgres_password(password=password)
@@ -103,24 +104,26 @@ def _set_up_postgresql_conf(
     )
 
 
-def _remove_debian_pgbackrest_conf() -> None:
+def _remove_debian_pgbackrest_conf(
+    *, root: PathLike | None = None, sudo: bool = False
+) -> None:
     _LOGGER.info("Removing Debian 'pgbackrest.conf'...")
-    rm("/etc/pgbackrest.conf")
+    path = get_root(root=root) / "etc/pgbackrest.conf"
+    rm(path, sudo=sudo)
 
 
 def _set_up_pgbackrest(
+    name: str,
+    /,
     *,
-    version: int = POSTGRES_SETTINGS.postgres.version,
-    name: str = POSTGRES_SETTINGS.postgres.name,
-    __root: PathLike | None = None,
+    root: PathLike | None = None,
+    sudo: bool = False,
+    version: int = VERSION,
 ) -> None:
     _LOGGER.info("Setting up 'pgbackrest.conf'...")
-    root_use = FILE_SYSTEM_ROOT if __root is None else Path(__root)
-    dest = root_use / "etc/pgbackrest/pgbackrest.conf"
-    qrt = BACKBLAZE_SETTINGS.qrt
-    dycw = BACKBLAZE_SETTINGS.dycw
-    set_up_config_file(
-        POSTGRES_SETTINGS.configs.pgbackrest_conf,
+    dest = get_root(root=root) / "etc/pgbackrest/pgbackrest.conf"
+    copy_text(
+        PATH_CONFIGS / "pgbackrest.conf",
         dest,
         substitutions={
             "PROCESS_MAX": max(round(CPU_COUNT / 4), 1),
@@ -224,34 +227,37 @@ def _set_up_remote(
 ##
 
 
-def uv_tool_run_set_up_cmd(
-    *,
-    os_password: SecretLike | None = None,
-    port: int = POSTGRES_SETTINGS.postgres.port,
-    version: int = POSTGRES_SETTINGS.postgres.version,
-    name: str = POSTGRES_SETTINGS.postgres.name,
-    pg_password: SecretLike = POSTGRES_SETTINGS.postgres.password,
-) -> list[str]:
-    args: list[str] = ["set-up"]
-    if os_password is not None:
-        args.extend(["--os-password", extract_secret(os_password)])
-    args.extend([
-        "--port",
-        str(port),
-        "--version",
-        str(version),
-        "--name",
-        name,
-        "--pg-password",
-        extract_secret(pg_password),
-    ])
-    return uv_tool_run_cmd(
-        "postgres-cli",
-        *args,
-        from_="postgres[cli]",
-        latest=True,
-        index=INFRA_UTILITIES_SETTINGS.nanode.pypi.url,
-    )
+@dataclass(order=True, unsafe_hash=True, slots=True)
+class Repo:
+    n: int = field(default=1)
+    name: str
+    command: str
+    schedule: str = field(default=SCHEDULE, kw_only=True)
+    user: str = field(default=USER, kw_only=True)
+    timeout: Duration = field(default=TIMEOUT, kw_only=True)
+    kill_after: Duration = field(default=KILL_AFTER, kw_only=True)
+    sudo: bool = field(default=SUDO, kw_only=True)
+    args: list[str] | None = field(default=None, kw_only=True)
+    log: str | None = field(default=None, kw_only=True)
+
+    @property
+    def text(self) -> str:
+        return substitute(
+            (PATH_CONFIGS / "job.tmpl"),
+            SCHEDULE=self.schedule,
+            USER=self.user,
+            NAME=self.name,
+            TIMEOUT=round(duration_to_seconds(self.timeout)),
+            KILL_AFTER=round(duration_to_seconds(self.kill_after)),
+            COMMAND=self.command,
+            COMMAND_ARGS_SPACE=" "
+            if (self.args is not None) and (len(self.args) >= 1)
+            else "",
+            SUDO="sudo" if self.sudo else "",
+            SUDO_TEE_SPACE=" " if self.sudo else "",
+            ARGS="" if self.args is None else " ".join(self.args),
+            LOG=self.log_use,
+        )
 
 
 ##
