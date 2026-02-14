@@ -255,7 +255,7 @@ def make_set_up_cmd(
 ) -> Command:
     @argument("name", type=Str())
     @argument("password", type=utilities.click.SecretStr())
-    @argument("path", type=utilities.click.Path())
+    @argument("path", type=utilities.click.Path(exist="dir if exists"))
     @option(
         "--cipher-pass",
         type=utilities.click.SecretStr(),
