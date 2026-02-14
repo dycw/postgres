@@ -67,9 +67,9 @@ def set_up(
     _set_up_pg_hba(name, version=version, root=root, sudo=sudo)
     _set_up_postgresql_conf(name, version=version, root=root, sudo=sudo)
     _remove_debian_pgbackrest_conf(root=root, sudo=sudo)
-    _set_up_pgbackrest(name, repo, *repos, root=root, sudo=sudo, version=version)
+    _set_up_pgbackrest(name, repo, *repos, version=version, root=root, sudo=sudo)
     _change_ownership(root=root, sudo=sudo)
-    _restart_cluster(name, sudo=sudo, version=version)
+    _restart_cluster(name, version=version, sudo=sudo)
     _set_postgres_password(password)
     _LOGGER.info("Finished setting up Postgres & pgBackRest")
 
@@ -90,7 +90,7 @@ def _set_up_pg_hba(
     root: PathLike | None = None,
     sudo: bool = False,
 ) -> None:
-    _LOGGER.info("Setting up '%d-pg_hba.conf'...", version)
+    _LOGGER.info("Setting up '%d-%s' 'pg_hba.conf'...", version, name)
     pg_root = get_pg_root(root=root, version=version, name=name)
     copy_text(
         PATH_CONFIGS / "pg_hba.conf",
@@ -114,7 +114,7 @@ def _set_up_postgresql_conf(
     root: PathLike | None = None,
     sudo: bool = False,
 ) -> None:
-    _LOGGER.info("Setting up '%d-postgresql.conf'...", version)
+    _LOGGER.info("Setting up '%d-%s' 'postgresql.conf'...", version, name)
     pg_root = get_pg_root(root=root, version=version, name=name)
     copy_text(
         PATH_CONFIGS / "postgresql.conf",
@@ -138,12 +138,12 @@ def _set_up_pgbackrest(
     repo: RepoSpec,
     /,
     *repos: RepoSpec,
+    version: int = VERSION,
     root: PathLike | None = None,
     sudo: bool = False,
     processes: int = PROCESSES,
-    version: int = VERSION,
 ) -> None:
-    _LOGGER.info("Setting up 'pgbackrest.conf'...")
+    _LOGGER.info("Setting up '%d-%s' 'pgbackrest.conf'...", version, name)
     dest = get_root(root=root) / "etc/pgbackrest/pgbackrest.conf"
     all_repos = [repo, *repos]
     all_repos = [r.replace(n=n) for n, r in enumerate(all_repos, start=1)]
@@ -168,9 +168,9 @@ def _change_ownership(*, root: PathLike | None = None, sudo: bool = False) -> No
 
 
 def _restart_cluster(
-    name: str, /, *, sudo: bool = False, version: int = VERSION
+    name: str, /, *, version: int = VERSION, sudo: bool = False
 ) -> None:
-    _LOGGER.info("Restarting cluster...")
+    _LOGGER.info("Restarting cluster '%d-%s'...", version, name)
     args: list[str] = ["pg_ctlcluster", str(version), name, "restart"]
     run(*maybe_sudo_cmd(*args, sudo=sudo))
 
