@@ -13,6 +13,7 @@ from installer import (
     set_up_postgres,
     sudo_option,
 )
+from pydantic import SecretStr
 from utilities.click import CONTEXT_SETTINGS, Enum, Str, argument, option
 from utilities.constants import Sentinel, sentinel
 from utilities.core import (
@@ -254,6 +255,8 @@ class RepoSpec:
             match fld.name, fld.value:
                 case "path" as name, Path():
                     value = Path("/") / fld.value
+                case str() as name, SecretStr():
+                    value = fld.value.get_secret_value()
                 case (name, value) if (name != "n") and (value is not None):
                     ...
                 case _, _:
@@ -264,10 +267,6 @@ class RepoSpec:
                 key = f"repo{self.n}-{kebab_case(name)}"
                 lines.append(f"{key} = {value}")
         return normalize_str("\n".join(lines))
-
-    @property
-    def _path_leading(self) -> Path:
-        return Path("/") / self.path
 
 
 ##
