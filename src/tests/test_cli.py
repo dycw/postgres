@@ -41,8 +41,8 @@ class TestCLI:
             param(restore_cli, ["cluster", "stanza"]),
             param(group_cli, ["restore", "cluster", "stanza"]),
             # set-up
-            param(set_up_cli, ["name", "1234", "path"]),
-            param(group_cli, ["set-up", "name", "1234", "path"]),
+            param(set_up_cli, ["name", "path"]),
+            param(group_cli, ["set-up", "name", "path"]),
             # stanza-create
             param(stanza_create_cli, ["stanza"]),
             param(group_cli, ["stanza-create", "stanza"]),
