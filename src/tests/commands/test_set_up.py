@@ -140,20 +140,20 @@ class TestSetUpPGBackrest:
         result = (tmp_path / "etc/pgbackrest/pgbackrest.conf").read_text()
         expected = normalize_multi_line_str("""
             [global]
-            archive-async=y
-            archive-check=y
-            process-max=1
-            log-level-console=info
-            start-fast=y
+            archive-async = y
+            archive-check = y
+            process-max = 1
+            log-level-console = info
+            start-fast = y
 
             repo1-path = /path
             repo1-type = s3
 
             [global:archive-push]
-            compress-level=3
+            compress-level = 3
 
             [stanza]
-            pg1-path=/var/lib/postgresql/17/cluster
+            pg1-path = /var/lib/postgresql/17/cluster
         """)
         assert result == expected
 
@@ -166,11 +166,11 @@ class TestSetUpPGBackrest:
         result = (tmp_path / "etc/pgbackrest/pgbackrest.conf").read_text()
         expected = normalize_multi_line_str("""
             [global]
-            archive-async=y
-            archive-check=y
-            process-max=1
-            log-level-console=info
-            start-fast=y
+            archive-async = y
+            archive-check = y
+            process-max = 1
+            log-level-console = info
+            start-fast = y
 
             repo1-path = /path1
 
@@ -178,10 +178,10 @@ class TestSetUpPGBackrest:
             repo2-type = s3
 
             [global:archive-push]
-            compress-level=3
+            compress-level = 3
 
             [stanza]
-            pg1-path=/var/lib/postgresql/17/cluster
+            pg1-path = /var/lib/postgresql/17/cluster
         """)
         assert result == expected
 
