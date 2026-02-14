@@ -5,9 +5,9 @@ from pathlib import Path
 from pydantic import SecretStr
 from utilities.core import normalize_multi_line_str
 
-from postgres._enums import CipherType, RepoType
+from postgres import CipherType, RepoType
+from postgres.commands import RepoSpec
 from postgres.commands._set_up import (
-    RepoSpec,
     _set_up_pg_hba,
     _set_up_pgbackrest,
     _set_up_postgresql_conf,
