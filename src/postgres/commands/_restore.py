@@ -85,7 +85,7 @@ def _run_restore(
         args.append(f"--repo={repo_num}")
     args.append(f"--stanza={stanza}")
     if target_timeline is not None:
-        args.append(f"--target_timeline={target_timeline}")
+        args.append(f"--target-timeline={target_timeline}")
     args.append("restore")
     run_or_as_user(*args, user=user, print=True, logger=_LOGGER)
     if repo is None:
