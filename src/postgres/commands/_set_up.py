@@ -207,9 +207,9 @@ class RepoSpec:
     n: int = field(default=1, kw_only=True)
     cipher_pass: pydantic.SecretStr | None = field(default=None, kw_only=True)
     cipher_type: CipherType | None = field(default=None, kw_only=True)
-    repo_type: RepoType = field(default=DEFAULT_REPO_TYPE, kw_only=True)
     retention_diff: int | None = field(default=None, kw_only=True)
     retention_full: int | None = field(default=None, kw_only=True)
+    type: RepoType = field(default=DEFAULT_REPO_TYPE, kw_only=True)
     s3_bucket: str | None = field(default=None, kw_only=True)
     s3_endpoint: str | None = field(default=None, kw_only=True)
     s3_key: pydantic.SecretStr | None = field(default=None, kw_only=True)
@@ -367,7 +367,7 @@ def make_set_up_cmd(
             Path(path),
             cipher_pass=None if cipher_pass is None else ensure_secret(cipher_pass),
             cipher_type=cipher_type,
-            repo_type=repo_type,
+            type=repo_type,
             retention_diff=retention_diff,
             retention_full=retention_full,
             s3_bucket=s3_bucket,

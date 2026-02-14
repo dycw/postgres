@@ -19,7 +19,7 @@ class TestRepoSpec:
         text = RepoSpec(Path("path")).text
         expected = normalize_multi_line_str("""
             repo1-path = /path
-            repo1-repo-type = posix
+            repo1-type = posix
         """)
         assert text == expected
 
@@ -27,7 +27,7 @@ class TestRepoSpec:
         text = RepoSpec(Path("path"), n=2).text
         expected = normalize_multi_line_str("""
             repo2-path = /path
-            repo2-repo-type = posix
+            repo2-type = posix
         """)
         assert text == expected
 
@@ -36,7 +36,7 @@ class TestRepoSpec:
         expected = normalize_multi_line_str("""
             repo1-path = /path
             repo1-cipher-pass = secret
-            repo1-repo-type = posix
+            repo1-type = posix
         """)
         assert text == expected
 
@@ -45,15 +45,15 @@ class TestRepoSpec:
         expected = normalize_multi_line_str("""
             repo1-path = /path
             repo1-cipher-type = aes-256-cbc
-            repo1-repo-type = posix
+            repo1-type = posix
         """)
         assert text == expected
 
     def test_repo_type(self) -> None:
-        text = RepoSpec(Path("path"), repo_type=RepoType.s3).text
+        text = RepoSpec(Path("path"), type=RepoType.s3).text
         expected = normalize_multi_line_str("""
             repo1-path = /path
-            repo1-repo-type = s3
+            repo1-type = s3
         """)
         assert text == expected
 
@@ -61,8 +61,8 @@ class TestRepoSpec:
         text = RepoSpec(Path("path"), retention_diff=1).text
         expected = normalize_multi_line_str("""
             repo1-path = /path
-            repo1-repo-type = posix
             repo1-retention-diff = 1
+            repo1-type = posix
         """)
         assert text == expected
 
@@ -70,8 +70,8 @@ class TestRepoSpec:
         text = RepoSpec(Path("path"), retention_full=1).text
         expected = normalize_multi_line_str("""
             repo1-path = /path
-            repo1-repo-type = posix
             repo1-retention-full = 1
+            repo1-type = posix
         """)
         assert text == expected
 
@@ -79,7 +79,7 @@ class TestRepoSpec:
         text = RepoSpec(Path("path"), s3_bucket="bucket").text
         expected = normalize_multi_line_str("""
             repo1-path = /path
-            repo1-repo-type = posix
+            repo1-type = posix
             repo1-s3-bucket = bucket
         """)
         assert text == expected
@@ -88,7 +88,7 @@ class TestRepoSpec:
         text = RepoSpec(Path("path"), s3_endpoint="endpoint").text
         expected = normalize_multi_line_str("""
             repo1-path = /path
-            repo1-repo-type = posix
+            repo1-type = posix
             repo1-s3-endpoint = endpoint
         """)
         assert text == expected
@@ -97,7 +97,7 @@ class TestRepoSpec:
         text = RepoSpec(Path("path"), s3_key=SecretStr("key")).text
         expected = normalize_multi_line_str("""
             repo1-path = /path
-            repo1-repo-type = posix
+            repo1-type = posix
             repo1-s3-key = key
         """)
         assert text == expected
@@ -106,7 +106,7 @@ class TestRepoSpec:
         text = RepoSpec(Path("path"), s3_key_secret=SecretStr("key-secret")).text
         expected = normalize_multi_line_str("""
             repo1-path = /path
-            repo1-repo-type = posix
+            repo1-type = posix
             repo1-s3-key-secret = key-secret
         """)
         assert text == expected
@@ -115,7 +115,7 @@ class TestRepoSpec:
         text = RepoSpec(Path("path"), s3_region="region").text
         expected = normalize_multi_line_str("""
             repo1-path = /path
-            repo1-repo-type = posix
+            repo1-type = posix
             repo1-s3-region = region
         """)
         assert text == expected
@@ -142,7 +142,7 @@ class TestSetUpPGBackrest:
             start-fast=y
 
             repo1-path = /path
-            repo1-repo-type = posix
+            repo1-type = posix
 
             [global:archive-push]
             compress-level=3
@@ -168,10 +168,10 @@ class TestSetUpPGBackrest:
             start-fast=y
 
             repo1-path = /path1
-            repo1-repo-type = posix
+            repo1-type = posix
 
             repo2-path = /path2
-            repo2-repo-type = posix
+            repo2-type = posix
 
             [global:archive-push]
             compress-level=3
