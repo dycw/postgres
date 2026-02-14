@@ -6,7 +6,7 @@ set positional-arguments := true
 
 # CLI entrypoint
 @cli *args:
-  postgres-cli {{args}}
+  cli {{args}}
 
 # Backup a database cluster
 @backup *args:
