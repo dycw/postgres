@@ -304,7 +304,6 @@ def make_set_up_cmd(
     )
     @option(
         "--type",
-        "type_",
         type=Enum(RepoType),
         default=DEFAULT_REPO_TYPE,
         help="Type of storage used for the repository",
@@ -348,7 +347,7 @@ def make_set_up_cmd(
         cipher_type: CipherType | None,
         retention_diff: int | None,
         retention_full: int | None,
-        type_: RepoType,
+        type: RepoType,  # noqa: A002
         s3_bucket: str | None,
         s3_endpoint: str | None,
         s3_key: SecretLike | None,
@@ -370,7 +369,7 @@ def make_set_up_cmd(
             cipher_type=cipher_type,
             retention_diff=retention_diff,
             retention_full=retention_full,
-            type=type_,
+            type=type,
             s3_bucket=s3_bucket,
             s3_endpoint=s3_endpoint,
             s3_key=None if s3_key is None else ensure_secret(s3_key),
