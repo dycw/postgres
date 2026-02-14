@@ -5,14 +5,16 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from installer import get_root, set_up_pgbackrest, set_up_postgres
+from pydantic import SecretStr
 from utilities.core import get_local_ip, substitute, to_logger
 from utilities.subprocess import copy_text, maybe_sudo_cmd, rm, run
 
 from postgres._constants import PATH_CONFIGS, PORT, VERSION
+from postgres._enums import DEFAULT_REPO_TYPE, RepoType
 from postgres._utilities import drop_cluster
 
 if TYPE_CHECKING:
-    from utilities.types import Duration, PathLike, SecretLike
+    from utilities.types import PathLike, SecretLike
 
 _LOGGER = to_logger(__name__)
 
@@ -229,16 +231,10 @@ def _set_up_remote(
 
 @dataclass(order=True, unsafe_hash=True, slots=True)
 class Repo:
+    path: Path = field(kw_only=True)
     n: int = field(default=1)
-    name: str
-    command: str
-    schedule: str = field(default=SCHEDULE, kw_only=True)
-    user: str = field(default=USER, kw_only=True)
-    timeout: Duration = field(default=TIMEOUT, kw_only=True)
-    kill_after: Duration = field(default=KILL_AFTER, kw_only=True)
-    sudo: bool = field(default=SUDO, kw_only=True)
-    args: list[str] | None = field(default=None, kw_only=True)
-    log: str | None = field(default=None, kw_only=True)
+    cipher_pass: SecretStr | None = field(default=None, kw_only=True)
+    repo_type: RepoType = field(default=DEFAULT_REPO_TYPE, kw_only=True)
 
     @property
     def text(self) -> str:
