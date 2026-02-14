@@ -22,7 +22,7 @@ class TestSetUpPGHBA:
 class TestSetUpPGBackrest:
     def test_single(self, *, tmp_path: Path) -> None:
         repo = RepoSpec(Path("path"))
-        _set_up_pgbackrest("cluster", "stanza", repo, root=tmp_path)
+        _set_up_pgbackrest("cluster", "stanza", repo, root=tmp_path, process_max=1)
         result = (tmp_path / "etc/pgbackrest/pgbackrest.conf").read_text()
         expected = normalize_multi_line_str("""
             [global]
@@ -46,7 +46,9 @@ class TestSetUpPGBackrest:
     def test_multiple(self, *, tmp_path: Path) -> None:
         repo1 = RepoSpec(Path("path1"))
         repo2 = RepoSpec(Path("path2"))
-        _set_up_pgbackrest("cluster", "stanza", repo1, repo2, root=tmp_path)
+        _set_up_pgbackrest(
+            "cluster", "stanza", repo1, repo2, root=tmp_path, process_max=1
+        )
         result = (tmp_path / "etc/pgbackrest/pgbackrest.conf").read_text()
         expected = normalize_multi_line_str("""
             [global]
