@@ -6,12 +6,25 @@ from typing import TYPE_CHECKING
 
 import utilities.click
 from click import Command, command
-from installer import get_root, set_up_pgbackrest, set_up_postgres, ssh_option
-from utilities.click import CONTEXT_SETTINGS, Str, argument
-from utilities.core import TemporaryFile, get_local_ip, is_pytest, to_logger
+from installer import (
+    get_root,
+    root_option,
+    set_up_pgbackrest,
+    set_up_postgres,
+    sudo_option,
+)
+from utilities.click import CONTEXT_SETTINGS, Enum, Str, argument, option
+from utilities.core import (
+    TemporaryFile,
+    get_local_ip,
+    is_pytest,
+    set_up_logging,
+    to_logger,
+)
 from utilities.pydantic import extract_secret
 from utilities.subprocess import chown, copy_text, maybe_sudo_cmd, rm, run
 
+from postgres import __version__
 from postgres._constants import PATH_CONFIGS, PORT, PROCESSES, VERSION
 from postgres._enums import DEFAULT_CIPHER_TYPE, DEFAULT_REPO_TYPE, CipherType, RepoType
 from postgres._utilities import drop_cluster, get_pg_root, run_or_as_user
@@ -168,8 +181,8 @@ def _set_postgres_password(password: SecretLike, /) -> None:
 
 @dataclass(order=True, unsafe_hash=True, slots=True)
 class RepoSpec:
-    path: Path = field(kw_only=True)
-    n: int = field(default=1)
+    path: Path = field()
+    n: int = field(default=1, kw_only=True)
     cipher_pass: pydantic.SecretStr | None = field(default=None, kw_only=True)
     cipher_type: CipherType | None = field(default=DEFAULT_CIPHER_TYPE, kw_only=True)
     repo_type: RepoType = field(default=DEFAULT_REPO_TYPE, kw_only=True)
@@ -198,48 +211,43 @@ def make_set_up_cmd(
 ) -> Command:
     @argument("name", type=Str())
     @argument("password", type=utilities.click.SecretStr())
-    @ssh_option
+    @argument("path", type=utilities.click.Path())
     @option(
-        "--os-password",
-        type=SecretStr(),
-        default=INFRA_UTILITIES_SETTINGS.os.password,
-        help="OS password",
+        "--cipher-pass",
+        type=utilities.click.SecretStr(),
+        default=None,
+        help="Repository cipher passphrase",
     )
     @option(
-        "--port", type=int, default=POSTGRES_SETTINGS.postgres.port, help="Cluster port"
-    )
-    @version_option
-    @option(
-        "--name",
-        type=Str(),
-        default=POSTGRES_SETTINGS.postgres.name,
-        help="Cluster name",
+        "--cipher-pass",
+        type=Enum(CipherType),
+        default=DEFAULT_CIPHER_TYPE,
+        help="Cipher used to encrypt the repository",
     )
     @option(
-        "--pg-password",
-        type=SecretStr(),
-        default=POSTGRES_SETTINGS.postgres.password,
-        help="Postgres password",
+        "--repo-type",
+        type=Enum(RepoType),
+        default=DEFAULT_REPO_TYPE,
+        help="Type of storage used for the repository",
     )
+    @sudo_option
+    @option("--port", type=int, default=PORT, help="Cluster port")
+    @root_option
     def set_up_sub_cmd(
         *,
-        ssh: str | None,
-        os_password: SecretLike | None,
-        port: int,
-        version: int,
         name: str,
-        pg_password: SecretLike,
+        password: SecretLike,
+        # ..
+        sudo: bool = False,
+        version: int = VERSION,
+        port: int = PORT,
+        root: PathLike | None = None,
     ) -> None:
         if is_pytest():
             return
-        set_up(
-            ssh=ssh,
-            os_password=os_password,
-            port=port,
-            version=version,
-            name=name,
-            password=pg_password,
-        )
+        set_up_logging(__name__, root=True, log_version=__version__)
+        repo = RepoSpec()
+        set_up(name, password, repo, sudo=sudo, version=version, port=port, root=root)
 
     return cli(name=name, help="Set up 'pgbackrest'", **CONTEXT_SETTINGS)(func)
 
