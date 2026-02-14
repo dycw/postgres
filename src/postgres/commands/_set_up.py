@@ -2,19 +2,23 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, assert_never
+from typing import TYPE_CHECKING
 
 import utilities.click
+from click import Command, command
 from installer import get_root, set_up_pgbackrest, set_up_postgres, ssh_option
-from utilities.click import Str, argument
-from utilities.core import get_local_ip, to_logger
+from utilities.click import CONTEXT_SETTINGS, Str, argument
+from utilities.core import TemporaryFile, get_local_ip, is_pytest, to_logger
+from utilities.pydantic import extract_secret
 from utilities.subprocess import chown, copy_text, maybe_sudo_cmd, rm, run
 
 from postgres._constants import PATH_CONFIGS, PORT, PROCESSES, VERSION
 from postgres._enums import DEFAULT_CIPHER_TYPE, DEFAULT_REPO_TYPE, CipherType, RepoType
-from postgres._utilities import drop_cluster, get_pg_root
+from postgres._utilities import drop_cluster, get_pg_root, run_or_as_user
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     import pydantic
     from utilities.types import PathLike, SecretLike
 
@@ -48,9 +52,8 @@ def set_up(
     _set_up_pgbackrest(name, repo, *repos, root=root, sudo=sudo, version=version)
     _change_ownership(root=root, sudo=sudo)
     _restart_cluster(name, sudo=sudo, version=version)
-    _set_postgres_password(password=password)
-    ensure_git_clone("gitea", "qrt", "postgres")
-    _LOGGER.info("Finished setting up Postgres")
+    _set_postgres_password(password)
+    _LOGGER.info("Finished setting up Postgres & pgBackRest")
 
 
 def _create_cluster(
@@ -153,48 +156,11 @@ def _restart_cluster(
     run(*maybe_sudo_cmd(*args, sudo=sudo))
 
 
-def _set_postgres_password(
-    *, password: SecretLike = POSTGRES_SETTINGS.postgres.password
-) -> None:
+def _set_postgres_password(password: SecretLike, /) -> None:
     _LOGGER.info("Setting 'postgres' role password...")
     cmd = f"ALTER ROLE postgres WITH PASSWORD '{extract_secret(password)}';"
-    with TemporaryFile(text=cmd) as temp:
-        chmod(temp, "u=rw,g=r,o=r")
-        run("psql", "-f", str(temp), user="postgres")
-
-
-##
-
-
-def _set_up_remote(
-    user: str,
-    hostname: str,
-    /,
-    *,
-    os_password: SecretLike | None = None,
-    port: int = POSTGRES_SETTINGS.postgres.port,
-    version: int = POSTGRES_SETTINGS.postgres.version,
-    name: str = POSTGRES_SETTINGS.postgres.name,
-    pg_password: SecretLike = POSTGRES_SETTINGS.postgres.password,
-) -> None:
-    _LOGGER.info("Setting up Postgres on %r...", hostname)
-    cmd_and_args = uv_tool_run_set_up_cmd(
-        os_password=os_password,
-        port=port,
-        version=version,
-        name=name,
-        pg_password=pg_password,
-    )
-    ssh(
-        user,
-        hostname,
-        *BASH_LS,
-        input=join(cmd_and_args),
-        print=True,
-        retry=INFRA_UTILITIES_SETTINGS.ssh_retry,
-        logger=_LOGGER,
-    )
-    _LOGGER.info("Finished setting up Postgres on %r...", hostname)
+    with TemporaryFile(text=cmd, perms="u=rw,g=r,o=r") as temp:
+        run_or_as_user("psql", "-f", str(temp), user="postgres")
 
 
 ##
@@ -227,47 +193,55 @@ class RepoSpec:
 ##
 
 
-@argument("name", type=Str())
-@argument("password", type=utilities.click.SecretStr())
-@ssh_option
-@option(
-    "--os-password",
-    type=SecretStr(),
-    default=INFRA_UTILITIES_SETTINGS.os.password,
-    help="OS password",
-)
-@option(
-    "--port", type=int, default=POSTGRES_SETTINGS.postgres.port, help="Cluster port"
-)
-@version_option
-@option(
-    "--name", type=Str(), default=POSTGRES_SETTINGS.postgres.name, help="Cluster name"
-)
-@option(
-    "--pg-password",
-    type=SecretStr(),
-    default=POSTGRES_SETTINGS.postgres.password,
-    help="Postgres password",
-)
-def set_up_sub_cmd(
-    *,
-    ssh: str | None,
-    os_password: SecretLike | None,
-    port: int,
-    version: int,
-    name: str,
-    pg_password: SecretLike,
-) -> None:
-    if is_pytest():
-        return
-    set_up(
-        ssh=ssh,
-        os_password=os_password,
-        port=port,
-        version=version,
-        name=name,
-        password=pg_password,
+def make_set_up_cmd(
+    *, cli: Callable[..., Command] = command, name: str | None = None
+) -> Command:
+    @argument("name", type=Str())
+    @argument("password", type=utilities.click.SecretStr())
+    @ssh_option
+    @option(
+        "--os-password",
+        type=SecretStr(),
+        default=INFRA_UTILITIES_SETTINGS.os.password,
+        help="OS password",
     )
+    @option(
+        "--port", type=int, default=POSTGRES_SETTINGS.postgres.port, help="Cluster port"
+    )
+    @version_option
+    @option(
+        "--name",
+        type=Str(),
+        default=POSTGRES_SETTINGS.postgres.name,
+        help="Cluster name",
+    )
+    @option(
+        "--pg-password",
+        type=SecretStr(),
+        default=POSTGRES_SETTINGS.postgres.password,
+        help="Postgres password",
+    )
+    def set_up_sub_cmd(
+        *,
+        ssh: str | None,
+        os_password: SecretLike | None,
+        port: int,
+        version: int,
+        name: str,
+        pg_password: SecretLike,
+    ) -> None:
+        if is_pytest():
+            return
+        set_up(
+            ssh=ssh,
+            os_password=os_password,
+            port=port,
+            version=version,
+            name=name,
+            password=pg_password,
+        )
+
+    return cli(name=name, help="Set up 'pgbackrest'", **CONTEXT_SETTINGS)(func)
 
 
 __all__ = ["make_set_up_cmd", "set_up"]
