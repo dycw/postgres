@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from postgres._click import (
-    ClickRestorable,
+    ClickRepoNumOrName,
     stanza_argument,
     stanza_option,
     type_default_option,
@@ -18,7 +18,7 @@ from postgres._enums import (
     CipherType,
     RepoType,
 )
-from postgres._types import Restorable
+from postgres._types import RepoNumOrName
 from postgres._utilities import drop_cluster, get_pg_root, run_or_as_user, to_repo_num
 
 __all__ = [
@@ -31,9 +31,9 @@ __all__ = [
     "VERSION",
     "BackupType",
     "CipherType",
-    "ClickRestorable",
+    "ClickRepoNumOrName",
+    "RepoNumOrName",
     "RepoType",
-    "Restorable",
     "drop_cluster",
     "get_pg_root",
     "run_or_as_user",

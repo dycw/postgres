@@ -14,7 +14,7 @@ from postgres._constants import VERSION
 if TYPE_CHECKING:
     from utilities.types import LoggerLike, PathLike, Retry, StrStrMapping
 
-    from postgres._types import Restorable
+    from postgres._types import RepoNumOrName
 
 
 _LOGGER = to_logger(__name__)
@@ -57,7 +57,7 @@ def get_pg_root(
 
 
 def to_repo_num(
-    *, repo: Restorable | None = None, mapping: Mapping[str, int] | None = None
+    *, repo: RepoNumOrName | None = None, mapping: Mapping[str, int] | None = None
 ) -> int:
     """Convert a repo number/name to a number."""
     match repo, mapping:

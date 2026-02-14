@@ -9,12 +9,12 @@ from postgres._constants import VERSION
 from postgres._enums import DEFAULT_BACKUP_TYPE, BackupType
 
 if TYPE_CHECKING:
-    from postgres._types import Restorable
+    from postgres._types import RepoNumOrName
 
 # parameters
 
 
-class ClickRestorable(ParamType):
+class ClickRepoNumOrName(ParamType):
     name = "restorable"
 
     @override
@@ -23,8 +23,8 @@ class ClickRestorable(ParamType):
 
     @override
     def convert(
-        self, value: Restorable, param: Parameter | None, ctx: Context | None
-    ) -> Restorable:
+        self, value: RepoNumOrName, param: Parameter | None, ctx: Context | None
+    ) -> RepoNumOrName:
         _ = (param, ctx)
         return value
 
@@ -35,7 +35,7 @@ class ClickRestorable(ParamType):
 stanza_argument = argument("stanza", type=Str())
 stanza_option = option("--stanza", type=Str(), default=None, help="Stanza name")
 repo_option = option(
-    "--repo", type=ClickRestorable(), default=None, help="Repo number/name"
+    "--repo", type=ClickRepoNumOrName(), default=None, help="Repo number/name"
 )
 type_default_option, type_no_default_option = [
     option("--type", "type_", type=Enum(BackupType), default=d, help="Backup type")
@@ -46,7 +46,7 @@ version_option = option("--version", type=int, default=VERSION, help="Postgres v
 
 
 __all__ = [
-    "ClickRestorable",
+    "ClickRepoNumOrName",
     "stanza_argument",
     "stanza_option",
     "type_default_option",

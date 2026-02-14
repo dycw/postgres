@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from utilities.types import MaybeIterable
 
     from postgres._enums import BackupType
-    from postgres._types import Repo
+    from postgres._types import RepoNumOrName
 
 
 _LOGGER = to_logger(__name__)
@@ -36,7 +36,7 @@ def backup(
     stanza: str,
     /,
     *,
-    repo: MaybeIterable[Repo] | None = None,
+    repo: MaybeIterable[RepoNumOrName] | None = None,
     repo_mapping: Mapping[str, int] | None = None,
     type_: BackupType = DEFAULT_BACKUP_TYPE,
     user: str | None = None,
@@ -54,7 +54,7 @@ def _backup_core(
     stanza: str,
     /,
     *,
-    repo: Repo | None = None,
+    repo: RepoNumOrName | None = None,
     repo_mapping: Mapping[str, int] | None = None,
     type_: BackupType = DEFAULT_BACKUP_TYPE,
     user: str | None = None,
@@ -86,7 +86,7 @@ def make_backup_cmd(
     @repo_option
     @user_option
     def func(
-        *, stanza: str, type_: BackupType, repo: Repo | None, user: str | None
+        *, stanza: str, type_: BackupType, repo: RepoNumOrName | None, user: str | None
     ) -> None:
         if is_pytest():
             return
