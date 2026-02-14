@@ -30,7 +30,7 @@ from utilities.pydantic import ensure_secret, extract_secret
 from utilities.subprocess import chown, copy_text, maybe_sudo_cmd, rm, run
 
 from postgres import __version__
-from postgres._constants import PATH_CONFIGS, PORT, PROCESSES, VERSION
+from postgres._constants import PATH_CONFIGS, PORT, PROCESS_MAX, VERSION
 from postgres._enums import DEFAULT_REPO_TYPE, CipherType, RepoType
 from postgres._utilities import drop_cluster, get_pg_root, run_or_as_user
 
@@ -48,7 +48,8 @@ _LOGGER = to_logger(__name__)
 
 
 def set_up(
-    name: str,
+    cluster: str,
+    stanza: str,
     repo: RepoSpec,
     /,
     *repos: RepoSpec,
@@ -56,23 +57,34 @@ def set_up(
     version: int = VERSION,
     port: int = PORT,
     root: PathLike | None = None,
+    process_max: int = PROCESS_MAX,
     password: SecretLike | None = None,
 ) -> None:
-    _LOGGER.info("Setting up Postgres & pgBackRest...")
+    """Set up 'postgres' and 'pgbackrest'."""
+    _LOGGER.info("Setting up 'postgres' & 'pgbackrest'...")
     set_up_postgres(sudo=sudo)
     set_up_pgbackrest(sudo=sudo)
     drop_cluster("main", version=version, sudo=sudo)
-    drop_cluster(name, version=version, sudo=sudo)
-    _create_cluster(name, version=version, port=port, sudo=sudo)
-    _set_up_pg_hba(name, version=version, root=root, sudo=sudo)
-    _set_up_postgresql_conf(name, version=version, root=root, sudo=sudo)
+    drop_cluster(cluster, version=version, sudo=sudo)
+    _create_cluster(cluster, version=version, port=port, sudo=sudo)
+    _set_up_pg_hba(cluster, version=version, root=root, sudo=sudo)
+    _set_up_postgresql_conf(cluster, version=version, root=root, sudo=sudo)
     _remove_debian_pgbackrest_conf(root=root, sudo=sudo)
-    _set_up_pgbackrest(name, repo, *repos, version=version, root=root, sudo=sudo)
+    _set_up_pgbackrest(
+        cluster,
+        stanza,
+        repo,
+        *repos,
+        version=version,
+        root=root,
+        sudo=sudo,
+        process_max=process_max,
+    )
     _change_ownership(root=root, sudo=sudo)
-    _restart_cluster(name, version=version, sudo=sudo)
+    _restart_cluster(cluster, version=version, sudo=sudo)
     if password is not None:
         _set_postgres_password(password)
-    _LOGGER.info("Finished setting up Postgres & pgBackRest")
+    _LOGGER.info("Finished setting up 'postgres' & 'pgbackrest'")
 
 
 def _create_cluster(
@@ -135,16 +147,17 @@ def _remove_debian_pgbackrest_conf(
 
 
 def _set_up_pgbackrest(
-    name: str,
+    cluster: str,
+    stanza: str,
     repo: RepoSpec,
     /,
     *repos: RepoSpec,
     version: int = VERSION,
     root: PathLike | None = None,
     sudo: bool = False,
-    processes: int = PROCESSES,
+    process_max: int = PROCESS_MAX,
 ) -> None:
-    _LOGGER.info("Setting up '%d-%s' 'pgbackrest.conf'...", version, name)
+    _LOGGER.info("Setting up '%d-%s-%s' 'pgbackrest.conf'...", version, cluster, stanza)
     dest = get_root(root=root) / "etc/pgbackrest/pgbackrest.conf"
     all_repos = [repo, *repos]
     all_repos = [r.replace(n=n) for n, r in enumerate(all_repos, start=1)]
@@ -153,10 +166,11 @@ def _set_up_pgbackrest(
         dest,
         sudo=sudo,
         substitutions={
-            "PROCESS_MAX": processes,
+            "PROCESS_MAX": process_max,
             "REPOS": "\n".join(r.text for r in all_repos).rstrip("\n"),
-            "NAME": name,
+            "STANZA": stanza,
             "VERSION": version,
+            "CLUSTER": cluster,
         },
         perms="u=rw,g=r,o=r",
     )
@@ -254,7 +268,8 @@ class RepoSpec:
 def make_set_up_cmd(
     *, cli: Callable[..., Command] = command, name: str | None = None
 ) -> Command:
-    @argument("name", type=Str())
+    @argument("cluster", type=Str())
+    @argument("stanza", type=Str())
     @argument("path", type=utilities.click.Path(exist="dir if exists"))
     @option(
         "--cipher-pass",
@@ -305,6 +320,12 @@ def make_set_up_cmd(
     @option("--port", type=int, default=PORT, help="Cluster port")
     @root_option
     @option(
+        "--process-max",
+        type=int,
+        default=PROCESS_MAX,
+        help="Max processes to use for compression/transfer",
+    )
+    @option(
         "--password",
         type=utilities.click.SecretStr(),
         default=None,
@@ -312,7 +333,8 @@ def make_set_up_cmd(
     )
     def func(
         *,
-        name: str,
+        cluster: str,
+        stanza: str,
         path: PathLike,
         cipher_pass: SecretLike | None,
         cipher_type: CipherType | None,
@@ -328,6 +350,7 @@ def make_set_up_cmd(
         version: int = VERSION,
         port: int = PORT,
         root: PathLike | None,
+        process_max: int,
         password: SecretLike | None,
     ) -> None:
         if is_pytest():
@@ -349,12 +372,14 @@ def make_set_up_cmd(
             s3_region=s3_region,
         )
         set_up(
-            name,
+            cluster,
+            stanza,
             repo,
             sudo=sudo,
             version=version,
             port=port,
             root=root,
+            process_max=process_max,
             password=password,
         )
 
