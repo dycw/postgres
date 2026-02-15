@@ -11,7 +11,13 @@ from utilities.subprocess import run
 from utilities.types import PathLike
 
 from postgres import __version__
-from postgres._click import repo_option, stanza_argument, user_option, version_option
+from postgres._click import (
+    print_option,
+    repo_option,
+    stanza_argument,
+    user_option,
+    version_option,
+)
 from postgres._constants import VERSION
 from postgres._utilities import run_or_as_user, to_repo_num
 
@@ -39,6 +45,7 @@ def restore(
     repo_mapping: Mapping[str, int] | None = None,
     target_timeline: int | None = None,
     user: str | None = None,
+    print: bool = True,  # noqa: A002
 ) -> None:
     _LOGGER.info("Restoring Postgres...")
     _stop_cluster(cluster, version=version)
@@ -49,6 +56,7 @@ def restore(
         repo_mapping=repo_mapping,
         target_timeline=target_timeline,
         user=user,
+        print=print,
     )
     _start_cluster(cluster, version=version)
     _LOGGER.info("Finished restoring Postgres")
@@ -75,6 +83,7 @@ def _run_restore(
     repo_mapping: Mapping[str, int] | None = None,
     target_timeline: int | None = None,
     user: str | None = None,
+    print: bool = True,  # noqa: A002
 ) -> None:
     args: list[str] = ["pgbackrest"]
     if repo is None:
@@ -87,7 +96,7 @@ def _run_restore(
     if target_timeline is not None:
         args.append(f"--target-timeline={target_timeline}")
     args.append("restore")
-    run_or_as_user(*args, user=user, print=True, logger=_LOGGER)
+    run_or_as_user(*args, user=user, print=print, logger=_LOGGER)
     if repo is None:
         _LOGGER.info("Finished restoring default repo to %r...", stanza)
     else:
@@ -113,6 +122,7 @@ def make_restore_cmd(
         "--target-timeline", type=int, default=None, help="Recover along a timeline"
     )
     @user_option
+    @print_option
     def func(
         *,
         cluster: str,
@@ -121,6 +131,7 @@ def make_restore_cmd(
         repo: RepoNumOrName | None,
         target_timeline: int | None,
         user: str | None,
+        print: bool,  # noqa: A002
     ) -> None:
         if is_pytest():
             return
@@ -132,6 +143,7 @@ def make_restore_cmd(
             repo=repo,
             target_timeline=target_timeline,
             user=user,
+            print=print,
         )
 
     return cli(name=name, help="Restore a database cluster", **CONTEXT_SETTINGS)(func)

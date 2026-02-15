@@ -8,6 +8,7 @@ from utilities.core import is_pytest, set_up_logging, to_logger
 
 from postgres import __version__
 from postgres._click import (
+    print_option,
     repo_option,
     stanza_option,
     type_no_default_option,
@@ -37,6 +38,7 @@ def info(
     stanza: str | None = None,
     type_: BackupType | None = None,
     user: str | None = None,
+    print: bool = True,  # noqa: A002
 ) -> None:
     _LOGGER.info("Getting info...")
     args: list[str] = ["pgbackrest"]
@@ -47,7 +49,7 @@ def info(
         args.append(f"--stanza={stanza}")
     if type_ is not None:
         args.append(f"--type={type_.value}")
-    run_or_as_user(*args, user=user, print=True, logger=_LOGGER)
+    run_or_as_user(*args, user=user, print=print, logger=_LOGGER)
     _LOGGER.info("Finished getting info")
 
 
@@ -61,17 +63,19 @@ def make_info_cmd(
     @stanza_option
     @type_no_default_option
     @user_option
+    @print_option
     def func(
         *,
         repo: RepoNumOrName | None,
         stanza: str | None,
         type_: BackupType | None,
         user: str | None,
+        print: bool,  # noqa: A002
     ) -> None:
         if is_pytest():
             return
         set_up_logging(__name__, root=True, log_version=__version__)
-        info(repo=repo, stanza=stanza, type_=type_, user=user)
+        info(repo=repo, stanza=stanza, type_=type_, user=user, print=print)
 
     return cli(
         name=name, help="Retrieve information about backups", **CONTEXT_SETTINGS
