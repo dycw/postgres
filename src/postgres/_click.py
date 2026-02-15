@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, override
 from click import Context, Parameter, ParamType
 from utilities.click import Enum, Str, argument, flag, option
 
-from postgres._constants import VERSION
+from postgres._constants import PROCESS_MAX, VERSION
 from postgres._enums import DEFAULT_BACKUP_TYPE, BackupType
 
 if TYPE_CHECKING:
@@ -34,6 +34,12 @@ class ClickRepoNumOrName(ParamType):
 
 
 print_option = flag("--print", default=True, help="Print the output to the console")
+process_max_option = option(
+    "--process-max",
+    type=int,
+    default=PROCESS_MAX,
+    help="Max processes to use for compression/transfer",
+)
 repo_option = option(
     "--repo", type=ClickRepoNumOrName(), default=None, help="Repo number/name"
 )
@@ -50,6 +56,7 @@ version_option = option("--version", type=int, default=VERSION, help="Postgres v
 __all__ = [
     "ClickRepoNumOrName",
     "print_option",
+    "process_max_option",
     "repo_option",
     "stanza_argument",
     "stanza_option",

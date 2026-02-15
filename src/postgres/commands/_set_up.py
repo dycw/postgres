@@ -31,6 +31,7 @@ from utilities.pydantic import ensure_secret, extract_secret
 from utilities.subprocess import chown, copy_text, maybe_sudo_cmd, rm, run
 
 from postgres import __version__
+from postgres._click import process_max_option
 from postgres._constants import PATH_CONFIGS, PORT, PROCESS_MAX, VERSION
 from postgres._enums import CipherType, RepoType
 from postgres._utilities import drop_cluster, get_pg_root, run_or_as_user
@@ -334,12 +335,7 @@ def make_set_up_cmd(
     @sudo_option
     @option("--port", type=int, default=PORT, help="Cluster port")
     @root_option
-    @option(
-        "--process-max",
-        type=int,
-        default=PROCESS_MAX,
-        help="Max processes to use for compression/transfer",
-    )
+    @process_max_option
     @option(
         "--password",
         type=utilities.click.SecretStr(),
