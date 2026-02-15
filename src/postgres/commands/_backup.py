@@ -8,6 +8,7 @@ from utilities.core import always_iterable, is_pytest, set_up_logging, to_logger
 
 from postgres import __version__
 from postgres._click import (
+    print_option,
     repo_option,
     stanza_argument,
     type_default_option,
@@ -40,13 +41,19 @@ def backup(
     repo_mapping: Mapping[str, int] | None = None,
     type_: BackupType = DEFAULT_BACKUP_TYPE,
     user: str | None = None,
+    print: bool = True,  # noqa: A002
 ) -> None:
     if repo is None:
-        _backup_core(stanza, type_=type_, user=user)
+        _backup_core(stanza, type_=type_, user=user, print=print)
     else:
         for repo_i in always_iterable(repo):
             _backup_core(
-                stanza, repo=repo_i, repo_mapping=repo_mapping, type_=type_, user=user
+                stanza,
+                repo=repo_i,
+                repo_mapping=repo_mapping,
+                type_=type_,
+                user=user,
+                print=print,
             )
 
 
@@ -58,6 +65,7 @@ def _backup_core(
     repo_mapping: Mapping[str, int] | None = None,
     type_: BackupType = DEFAULT_BACKUP_TYPE,
     user: str | None = None,
+    print: bool = True,  # noqa: A002
 ) -> None:
     args: list[str] = ["pgbackrest"]
     if repo is None:
@@ -68,7 +76,7 @@ def _backup_core(
         repo_num = to_repo_num(repo=repo, mapping=repo_mapping)
         args.append(f"--repo={repo_num}")
     args.extend([f"--stanza={stanza}", f"--type={type_.value}", "backup"])
-    run_or_as_user(*args, user=user, print=True, logger=_LOGGER)
+    run_or_as_user(*args, user=user, print=print, logger=_LOGGER)
     if repo is None:
         _LOGGER.info("Finished %s backup %r to default repo", type_.desc, stanza)
     else:
@@ -85,13 +93,19 @@ def make_backup_cmd(
     @type_default_option
     @repo_option
     @user_option
+    @print_option
     def func(
-        *, stanza: str, type_: BackupType, repo: RepoNumOrName | None, user: str | None
+        *,
+        stanza: str,
+        type_: BackupType,
+        repo: RepoNumOrName | None,
+        user: str | None,
+        print: bool,  # noqa: A002
     ) -> None:
         if is_pytest():
             return
         set_up_logging(__name__, root=True, log_version=__version__)
-        backup(stanza, repo=repo, type_=type_, user=user)
+        backup(stanza, repo=repo, type_=type_, user=user, print=print)
 
     return cli(name=name, help="Backup a database cluster", **CONTEXT_SETTINGS)(func)
 
