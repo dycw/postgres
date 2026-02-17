@@ -1,13 +1,13 @@
 [pytest]
   addopts = [
-    "-ra",
-    "-vv",
     "--color=auto",
-    "--durations=10",
-    "--durations-min=10",
     "--cov-config=.coveragerc.toml",
     "--cov-report=html",
     "--cov=postgres",
+    "--durations-min=10",
+    "--durations=10",
+    "-ra",
+    "-vv",
   ]
   asyncio_default_fixture_loop_scope = "function"
   asyncio_mode = "auto"
