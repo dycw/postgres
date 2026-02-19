@@ -322,7 +322,7 @@ wheels = [
 
 [[package]]
 name = "dycw-installer"
-version = "0.9.1"
+version = "0.9.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -333,12 +333,12 @@ dependencies = [
     { name = "shellingham" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bb/dc/a943b8718375e55cda0d5b6e9c508cdb29575c660951001884af003de3d5/dycw_installer-0.9.1-py3-none-any.whl", hash = "sha256:c27bb1a02519bb00333a90946e9de73774ae8ae7087273ec448f9f259c2f6fb2", size = 22816, upload-time = "2026-02-13T21:56:30.744Z" },
+    { url = "https://files.pythonhosted.org/packages/7d/c4/1b525deb02f13ba6873872e4ad2b876206c92463413fa77ea44d908f4f8b/dycw_installer-0.9.4-py3-none-any.whl", hash = "sha256:e8e750b024dee148c527f4b8ba4453f98eded8586786f20b1400f36cb2261083", size = 23019, upload-time = "2026-02-19T04:43:59.484Z" },
 ]
 
 [[package]]
 name = "dycw-postgres"
-version = "0.2.11"
+version = "0.2.12"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
@@ -364,16 +364,16 @@ dev = [
 requires-dist = [
     { name = "click", specifier = ">=8.3.1" },
     { name = "click", marker = "extra == 'cli'", specifier = "==8.3.1" },
-    { name = "dycw-installer", specifier = ">=0.9.1" },
-    { name = "dycw-installer", marker = "extra == 'cli'", specifier = "==0.9.1" },
-    { name = "dycw-utilities", specifier = ">=0.191.4" },
-    { name = "dycw-utilities", marker = "extra == 'cli'", specifier = "==0.191.4" },
+    { name = "dycw-installer", specifier = ">=0.9.4" },
+    { name = "dycw-installer", marker = "extra == 'cli'", specifier = "==0.9.4" },
+    { name = "dycw-utilities", specifier = ">=0.191.10" },
+    { name = "dycw-utilities", marker = "extra == 'cli'", specifier = "==0.191.10" },
 ]
 provides-extras = ["cli"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "dycw-utilities", extras = ["test"], specifier = ">=0.191.4" },
+    { name = "dycw-utilities", extras = ["test"], specifier = ">=0.191.10" },
     { name = "orjson", specifier = ">=3.11.7" },
     { name = "pyright", specifier = ">=1.1.408" },
 ]
@@ -392,7 +392,7 @@ wheels = [
 
 [[package]]
 name = "dycw-utilities"
-version = "0.191.4"
+version = "0.191.10"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "coloredlogs" },
@@ -404,7 +404,7 @@ dependencies = [
     { name = "whenever" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9c/e3/73cf14eae08913c2197531b0f012ac221a137b4fb183897f734415aca308/dycw_utilities-0.191.4-py3-none-any.whl", hash = "sha256:7b6b85338702b62c38e2ea56f187f9c3a1eaed5bd44556b69cbfc28da8af0cd2", size = 213069, upload-time = "2026-02-17T06:48:09.352Z" },
+    { url = "https://files.pythonhosted.org/packages/0e/1d/0626b0cb714ebf4f17ccb5ee22427cd0d6b2a50eb8c54843e69bd2535541/dycw_utilities-0.191.10-py3-none-any.whl", hash = "sha256:d0245da7703ad77da80c6bcba1664ca3f76f2ec4322030294bf0bb56e1f0defd", size = 215191, upload-time = "2026-02-18T13:56:32.167Z" },
 ]
 
 [package.optional-dependencies]

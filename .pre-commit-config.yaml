@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/dycw/pre-commit-hooks
-    rev: 0.14.143
+    rev: 0.15.22
     hooks:
       - id: add-hooks
         args:
@@ -35,15 +35,16 @@ repos:
         priority: 20
       - id: setup-bump-my-version
         args:
-          - --python-package-name-internal=postgres
+          - --package-name=postgres
         priority: 20
       - id: setup-ci-pull-request
         args:
           - --repo-name=postgres
+          - --set-up
         priority: 20
       - id: setup-ci-push
         args:
-          - --python
+          - --package
         priority: 20
       - id: setup-coverage
         priority: 20
@@ -62,14 +63,14 @@ repos:
       - id: setup-pyproject
         args:
           - --description=Library to operate `postgres` and `pgbackrest`
-          - --python-package-name-external=dycw-postgres
-          - --python-package-name-internal=postgres
+          - --name-external=dycw-postgres
+          - --name-internal=postgres
         priority: 20
       - id: setup-pyright
         priority: 20
       - id: setup-pytest
         args:
-          - --python-package-name-internal=postgres
+          - --package-name=postgres
         priority: 20
       - id: setup-readme
         args:
