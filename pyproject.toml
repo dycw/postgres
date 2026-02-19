@@ -13,15 +13,21 @@
     "click>=8.3.1",
     "dycw-installer>=0.9.4",
     "dycw-utilities>=0.191.10",
+    "pydantic-settings>=2.13.0",
   ]
   description = "Library to operate `postgres` and `pgbackrest`"
   name = "dycw-postgres"
   readme = "README.md"
   requires-python = ">= 3.12"
-  version = "0.2.12"
+  version = "0.2.13"
 
   [project.optional-dependencies]
-    cli = ["click==8.3.1", "dycw-installer==0.9.4", "dycw-utilities==0.191.10"]
+    cli = [
+      "click==8.3.1",
+      "dycw-installer==0.9.4",
+      "dycw-utilities==0.191.10",
+      "pydantic-settings==2.13.0",
+    ]
 
   [project.scripts]
     backup = "postgres._cli:backup_cli"

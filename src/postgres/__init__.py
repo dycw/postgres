@@ -21,6 +21,7 @@ from postgres._enums import (
     CipherType,
     RepoType,
 )
+from postgres._settings import RetentionSettings
 from postgres._types import RepoNumOrName
 from postgres._utilities import drop_cluster, get_pg_root, run_or_as_user, to_repo_num
 
@@ -37,6 +38,7 @@ __all__ = [
     "ClickRepoNumOrName",
     "RepoNumOrName",
     "RepoType",
+    "RetentionSettings",
     "drop_cluster",
     "get_pg_root",
     "print_option",
@@ -51,4 +53,4 @@ __all__ = [
     "user_option",
     "version_option",
 ]
-__version__ = "0.2.12"
+__version__ = "0.2.13"
