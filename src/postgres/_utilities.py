@@ -56,8 +56,8 @@ def get_pg_root(
 ##
 
 
-def to_repo_num(
-    *, repo: RepoNumOrName | None = None, mapping: Mapping[str, int] | None = None
+def to_repo_num[T: str](
+    *, repo: RepoNumOrName[T] | None = None, mapping: Mapping[T, int] | None = None
 ) -> int:
     """Convert a repo number/name to a number."""
     match repo, mapping:

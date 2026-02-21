@@ -33,12 +33,12 @@ _LOGGER = to_logger(__name__)
 ##
 
 
-def backup(
+def backup[T: str](
     stanza: str,
     /,
     *,
-    repo: MaybeIterable[RepoNumOrName] | None = None,
-    repo_mapping: Mapping[str, int] | None = None,
+    repo: MaybeIterable[RepoNumOrName[T]] | None = None,
+    repo_mapping: Mapping[T, int] | None = None,
     type_: BackupType = DEFAULT_BACKUP_TYPE,
     user: str | None = None,
     print: bool = True,  # noqa: A002
@@ -57,12 +57,12 @@ def backup(
             )
 
 
-def _backup_core(
+def _backup_core[T: str](
     stanza: str,
     /,
     *,
-    repo: RepoNumOrName | None = None,
-    repo_mapping: Mapping[str, int] | None = None,
+    repo: RepoNumOrName[T] | None = None,
+    repo_mapping: Mapping[T, int] | None = None,
     type_: BackupType = DEFAULT_BACKUP_TYPE,
     user: str | None = None,
     print: bool = True,  # noqa: A002
@@ -94,11 +94,11 @@ def make_backup_cmd(
     @repo_option
     @user_option
     @print_option
-    def func(
+    def func[T: str](
         *,
         stanza: str,
         type_: BackupType,
-        repo: RepoNumOrName | None,
+        repo: RepoNumOrName[T] | None,
         user: str | None,
         print: bool,  # noqa: A002
     ) -> None:
