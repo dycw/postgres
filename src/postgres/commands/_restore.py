@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
 from click import Command, command
@@ -22,11 +21,11 @@ from postgres._constants import VERSION
 from postgres._utilities import run_or_as_user, to_repo_num
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Mapping
+    from collections.abc import Callable
 
     from utilities.types import PathLike
 
-    from postgres._types import RepoNumOrName
+    from postgres._types import RepoNameMapping, RepoNumOrName
 
 
 _LOGGER = to_logger(__name__)
@@ -35,14 +34,14 @@ _LOGGER = to_logger(__name__)
 ##
 
 
-def restore(
+def restore[T: str](
     cluster: str,
     stanza: str,
     /,
     *,
     version: int = VERSION,
-    repo: RepoNumOrName | None = None,
-    repo_mapping: Mapping[str, int] | None = None,
+    repo: RepoNumOrName[T] | None = None,
+    repo_mapping: RepoNameMapping[T] | None = None,
     target_timeline: int | None = None,
     user: str | None = None,
     print: bool = True,  # noqa: A002
@@ -75,12 +74,12 @@ def _delete_data(
     run("find", str(path), "-mindepth", "1", "-delete")
 
 
-def _run_restore(
+def _run_restore[T: str](
     stanza: str,
     /,
     *,
-    repo: RepoNumOrName | None = None,
-    repo_mapping: Mapping[str, int] | None = None,
+    repo: RepoNumOrName[T] | None = None,
+    repo_mapping: RepoNameMapping[T] | None = None,
     target_timeline: int | None = None,
     user: str | None = None,
     print: bool = True,  # noqa: A002
@@ -123,12 +122,12 @@ def make_restore_cmd(
     )
     @user_option
     @print_option
-    def func(
+    def func[T: str](
         *,
         cluster: str,
         stanza: str,
         version: int,
-        repo: RepoNumOrName | None,
+        repo: RepoNumOrName[T] | None,
         target_timeline: int | None,
         user: str | None,
         print: bool,  # noqa: A002

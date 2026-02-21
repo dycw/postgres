@@ -17,12 +17,12 @@ from postgres._click import (
 from postgres._utilities import run_or_as_user, to_repo_num
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Mapping
+    from collections.abc import Callable
 
     from click import Command
 
     from postgres._enums import BackupType
-    from postgres._types import RepoNumOrName
+    from postgres._types import RepoNameMapping, RepoNumOrName
 
 
 _LOGGER = to_logger(__name__)
@@ -31,10 +31,10 @@ _LOGGER = to_logger(__name__)
 ##
 
 
-def info(
+def info[T: str](
     *,
-    repo: RepoNumOrName | None = None,
-    repo_mapping: Mapping[str, int] | None = None,
+    repo: RepoNumOrName[T] | None = None,
+    repo_mapping: RepoNameMapping[T] | None = None,
     stanza: str | None = None,
     type_: BackupType | None = None,
     user: str | None = None,
@@ -56,7 +56,7 @@ def info(
 ##
 
 
-def make_info_cmd(
+def make_info_cmd[T: str](
     *, cli: Callable[..., Command] = command, name: str | None = None
 ) -> Command:
     @repo_option
@@ -66,7 +66,7 @@ def make_info_cmd(
     @print_option
     def func(
         *,
-        repo: RepoNumOrName | None,
+        repo: RepoNumOrName[T] | None,
         stanza: str | None,
         type_: BackupType | None,
         user: str | None,
