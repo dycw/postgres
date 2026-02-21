@@ -322,7 +322,7 @@ wheels = [
 
 [[package]]
 name = "dycw-installer"
-version = "0.9.4"
+version = "0.9.11"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -333,12 +333,12 @@ dependencies = [
     { name = "shellingham" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7d/c4/1b525deb02f13ba6873872e4ad2b876206c92463413fa77ea44d908f4f8b/dycw_installer-0.9.4-py3-none-any.whl", hash = "sha256:e8e750b024dee148c527f4b8ba4453f98eded8586786f20b1400f36cb2261083", size = 23019, upload-time = "2026-02-19T04:43:59.484Z" },
+    { url = "https://files.pythonhosted.org/packages/36/94/45e46c06841bba3215a927077dc8172346fbc9eeb169ed5fe9000f92a9b4/dycw_installer-0.9.11-py3-none-any.whl", hash = "sha256:8adbf6be0a0afa7a1346e73d354895ed40a7d60a359a0cfa4312f5f49dabc1c1", size = 23364, upload-time = "2026-02-20T11:57:15.066Z" },
 ]
 
 [[package]]
 name = "dycw-postgres"
-version = "0.2.13"
+version = "0.2.14"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
@@ -366,18 +366,18 @@ dev = [
 requires-dist = [
     { name = "click", specifier = ">=8.3.1" },
     { name = "click", marker = "extra == 'cli'", specifier = "==8.3.1" },
-    { name = "dycw-installer", specifier = ">=0.9.4" },
-    { name = "dycw-installer", marker = "extra == 'cli'", specifier = "==0.9.4" },
-    { name = "dycw-utilities", specifier = ">=0.191.10" },
-    { name = "dycw-utilities", marker = "extra == 'cli'", specifier = "==0.191.10" },
-    { name = "pydantic-settings", specifier = ">=2.13.0" },
-    { name = "pydantic-settings", marker = "extra == 'cli'", specifier = "==2.13.0" },
+    { name = "dycw-installer", specifier = ">=0.9.11" },
+    { name = "dycw-installer", marker = "extra == 'cli'", specifier = "==0.9.11" },
+    { name = "dycw-utilities", specifier = ">=0.192.0" },
+    { name = "dycw-utilities", marker = "extra == 'cli'", specifier = "==0.192.0" },
+    { name = "pydantic-settings", specifier = ">=2.13.1" },
+    { name = "pydantic-settings", marker = "extra == 'cli'", specifier = "==2.13.1" },
 ]
 provides-extras = ["cli"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "dycw-utilities", extras = ["test"], specifier = ">=0.191.10" },
+    { name = "dycw-utilities", extras = ["test"], specifier = ">=0.192.0" },
     { name = "orjson", specifier = ">=3.11.7" },
     { name = "pyright", specifier = ">=1.1.408" },
 ]
@@ -396,7 +396,7 @@ wheels = [
 
 [[package]]
 name = "dycw-utilities"
-version = "0.191.10"
+version = "0.192.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "coloredlogs" },
@@ -408,7 +408,7 @@ dependencies = [
     { name = "whenever" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0e/1d/0626b0cb714ebf4f17ccb5ee22427cd0d6b2a50eb8c54843e69bd2535541/dycw_utilities-0.191.10-py3-none-any.whl", hash = "sha256:d0245da7703ad77da80c6bcba1664ca3f76f2ec4322030294bf0bb56e1f0defd", size = 215191, upload-time = "2026-02-18T13:56:32.167Z" },
+    { url = "https://files.pythonhosted.org/packages/8d/31/a81bd676f00fd0d3e16b37c8fe6d15bc401ab47234a5cc6ad491fa5cd93f/dycw_utilities-0.192.0-py3-none-any.whl", hash = "sha256:4675a3043325736428261882b47f852dfd9573002a5ea44a871a8d42e5e0fa2d", size = 215229, upload-time = "2026-02-20T01:06:27.906Z" },
 ]
 
 [package.optional-dependencies]
@@ -762,16 +762,16 @@ wheels = [
 
 [[package]]
 name = "pydantic-settings"
-version = "2.13.0"
+version = "2.13.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "python-dotenv" },
     { name = "typing-inspection" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/96/a1/ae859ffac5a3338a66b74c5e29e244fd3a3cc483c89feaf9f56c39898d75/pydantic_settings-2.13.0.tar.gz", hash = "sha256:95d875514610e8595672800a5c40b073e99e4aae467fa7c8f9c263061ea2e1fe", size = 222450, upload-time = "2026-02-15T12:11:23.476Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/52/6d/fffca34caecc4a3f97bda81b2098da5e8ab7efc9a66e819074a11955d87e/pydantic_settings-2.13.1.tar.gz", hash = "sha256:b4c11847b15237fb0171e1462bf540e294affb9b86db4d9aa5c01730bdbe4025", size = 223826, upload-time = "2026-02-19T13:45:08.055Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b0/1a/dd1b9d7e627486cf8e7523d09b70010e05a4bc41414f4ae6ce184cf0afb6/pydantic_settings-2.13.0-py3-none-any.whl", hash = "sha256:d67b576fff39cd086b595441bf9c75d4193ca9c0ed643b90360694d0f1240246", size = 58429, upload-time = "2026-02-15T12:11:22.133Z" },
+    { url = "https://files.pythonhosted.org/packages/00/4b/ccc026168948fec4f7555b9164c724cf4125eac006e176541483d2c959be/pydantic_settings-2.13.1-py3-none-any.whl", hash = "sha256:d56fd801823dbeae7f0975e1f8c8e25c258eb75d278ea7abb5d9cebb01b56237", size = 58929, upload-time = "2026-02-19T13:45:06.034Z" },
 ]
 
 [[package]]
@@ -1110,15 +1110,15 @@ wheels = [
 
 [[package]]
 name = "rich"
-version = "14.3.2"
+version = "14.3.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "markdown-it-py" },
     { name = "pygments" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/74/99/a4cab2acbb884f80e558b0771e97e21e939c5dfb460f488d19df485e8298/rich-14.3.2.tar.gz", hash = "sha256:e712f11c1a562a11843306f5ed999475f09ac31ffb64281f73ab29ffdda8b3b8", size = 230143, upload-time = "2026-02-01T16:20:47.908Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b3/c6/f3b320c27991c46f43ee9d856302c70dc2d0fb2dba4842ff739d5f46b393/rich-14.3.3.tar.gz", hash = "sha256:b8daa0b9e4eef54dd8cf7c86c03713f53241884e814f4e2f5fb342fe520f639b", size = 230582, upload-time = "2026-02-19T17:23:12.474Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ef/45/615f5babd880b4bd7d405cc0dc348234c5ffb6ed1ea33e152ede08b2072d/rich-14.3.2-py3-none-any.whl", hash = "sha256:08e67c3e90884651da3239ea668222d19bea7b589149d8014a21c633420dbb69", size = 309963, upload-time = "2026-02-01T16:20:46.078Z" },
+    { url = "https://files.pythonhosted.org/packages/14/25/b208c5683343959b670dc001595f2f3737e051da617f66c31f7c4fa93abc/rich-14.3.3-py3-none-any.whl", hash = "sha256:793431c1f8619afa7d3b52b2cdec859562b950ea0d4b6b505397612db8d5362d", size = 310458, upload-time = "2026-02-19T17:23:13.732Z" },
 ]
 
 [[package]]
@@ -1141,14 +1141,14 @@ wheels = [
 
 [[package]]
 name = "typeguard"
-version = "4.5.0"
+version = "4.5.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7e/ec/adfe3dd6b5f7c5fc0b3cecdf6f893f1756dbd23cf749cd1ae49db069414f/typeguard-4.5.0.tar.gz", hash = "sha256:749bea21cdb2553e12831bc29f1eae980b22c7de8331ab67ae7db9e85470b5a7", size = 79993, upload-time = "2026-02-15T00:24:25.244Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2b/e8/66e25efcc18542d58706ce4e50415710593721aae26e794ab1dec34fb66f/typeguard-4.5.1.tar.gz", hash = "sha256:f6f8ecbbc819c9bc749983cc67c02391e16a9b43b8b27f15dc70ed7c4a007274", size = 80121, upload-time = "2026-02-19T16:09:03.392Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d4/35/7541d1f046491fac8ce05d543d3f0de0af02086ad864dd3a23535ec703b9/typeguard-4.5.0-py3-none-any.whl", hash = "sha256:cfda388fc88a9ce42a41890900d6f31ee124bea9b73bb84701a32438e92165c3", size = 36724, upload-time = "2026-02-15T00:24:23.581Z" },
+    { url = "https://files.pythonhosted.org/packages/91/88/b55b3117287a8540b76dbdd87733808d4d01c8067a3b339408c250bb3600/typeguard-4.5.1-py3-none-any.whl", hash = "sha256:44d2bf329d49a244110a090b55f5f91aa82d9a9834ebfd30bcc73651e4a8cc40", size = 36745, upload-time = "2026-02-19T16:09:01.6Z" },
 ]
 
 [[package]]
